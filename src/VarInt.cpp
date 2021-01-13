@@ -1,11 +1,7 @@
-#include "mumlib/VarInt.hpp"
-
-#include <boost/format.hpp>
+#include "mumlib_private/VarInt.hpp"
 
 mumlib::VarInt::VarInt(int64_t value) : value(value) { }
-
 mumlib::VarInt::VarInt(uint8_t *encoded) : value(parseVariant(encoded)) { }
-
 mumlib::VarInt::VarInt(std::vector<uint8_t> encoded) : value(parseVariant(&encoded[0])) { }
 
 /*

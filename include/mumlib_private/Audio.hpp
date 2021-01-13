@@ -1,22 +1,18 @@
 #pragma once
 
-#include "Transport.hpp"
-
-#include <opus/opus.h>
-
-#include <speex/speex_jitter.h>
-
+//stdlib
 #include <chrono>
 #include <map>
 
+//opus
+#include <opus/opus.h>
+
+//mumlib
+#include "mumlib.hpp"
+#include "mumlib/Constants.hpp"
+#include "mumlib/Logger.hpp"
+
 namespace mumlib {
-
-    class MumlibException;
-
-    class AudioException : public MumlibException {
-    public:
-        explicit AudioException(string message) : MumlibException(message) { }
-    };
 
     struct IncomingAudioPacket {
         AudioPacketType type;
@@ -27,8 +23,12 @@ namespace mumlib {
         int audioPayloadLength;
     };
 
-    class Audio : boost::noncopyable {
+    class Audio {
     public:
+        //mark as non-copyable
+        Audio(const Audio&) = delete;
+        Audio& operator=(const Audio&) = delete;
+
         explicit Audio(int sampleRate=DEFAULT_OPUS_SAMPLE_RATE,
                        int bitrate=DEFAULT_OPUS_ENCODER_BITRATE,
                        int channels=DEFAULT_OPUS_NUM_CHANNELS);
@@ -37,23 +37,10 @@ namespace mumlib {
 
         IncomingAudioPacket decodeIncomingAudioPacket(uint8_t *inputBuffer, int inputBufferLength);
 
-        void addFrameToBuffer(uint8_t *inputBuffer, int inputLength, int sequence);
-
-        // todo: mix audio
-        void mixAudio(uint8_t *dest, uint8_t *src, int bufferOffset, int inputLength);
-
-        void resizeBuffer();
-
-        std::pair<int, bool> decodeOpusPayload(int sessionId,
-                                               int16_t *pcmBuffer,
-                                               int pcmBufferSize);
-        
         std::pair<int, bool> decodeOpusPayload(uint8_t *inputBuffer,
                                                int inputLength,
-                                               int sessionId,
                                                int16_t *pcmBuffer,
                                                int pcmBufferSize);
-
 
         int encodeAudioPacket(
                 int target,
@@ -68,24 +55,15 @@ namespace mumlib {
 
         void resetEncoder();
 
-        void resetJitterBuffer();
-
     private:
-        log4cpp::Category &logger;
+        uint32_t _samplerate = 0;
 
-        std::map<int, OpusDecoder *> opusDecoders;
-        OpusEncoder *opusEncoder;
-        JitterBuffer *jbBuffer;
+        Logger logger = Logger("Mumlib.audio");
 
-        int64_t outgoingSequenceNumber;
+        OpusDecoder * opusDecoder = nullptr;
+        OpusEncoder * opusEncoder = nullptr;
 
-        unsigned int iSampleRate;
-        unsigned int iChannels;
-        unsigned int iFrameSize;
-        unsigned int iAudioBufferSize;
-
-        float *fFadeIn;
-        float *fFadeOut;
+        int64_t outgoingSequenceNumber = 0;
 
         std::chrono::time_point<std::chrono::system_clock> lastEncodedAudioPacketTimestamp;
     };

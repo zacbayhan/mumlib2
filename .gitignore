@@ -47,3 +47,6 @@ bin
 Mumble.pb.cc
 Mumble.pb.h
 
+
+.vscode/
+install/

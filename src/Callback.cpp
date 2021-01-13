@@ -1,17 +1,20 @@
+//mumlib
 #include "mumlib/Callback.hpp"
-
-#include <boost/noncopyable.hpp>
-#include <log4cpp/Category.hh>
+#include "mumlib/Logger.hpp"
 
 using namespace std;
 using namespace mumlib;
 
 namespace mumlib {
-    struct _BasicCallback_Private : boost::noncopyable {
+    struct _BasicCallback_Private {
     public:
-        _BasicCallback_Private() : logger(log4cpp::Category::getInstance("mumlib.BasicCallback")) { }
+        //mark as non-copyable
+        _BasicCallback_Private(const _BasicCallback_Private&) = delete;
+        _BasicCallback_Private& operator=(const _BasicCallback_Private&) = delete;
 
-        log4cpp::Category &logger;
+        _BasicCallback_Private() : logger("mumlib.BasicCallback") { }
+
+        Logger logger;
     };
 
 }

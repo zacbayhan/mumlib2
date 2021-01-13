@@ -1,57 +1,42 @@
 #pragma once
 
-#include "mumlib/CryptState.hpp"
-#include "mumlib/VarInt.hpp"
-#include "enums.hpp"
+//stdlib
+#include <chrono>
+#include <utility>
 
+//boost
 #include <boost/noncopyable.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/pool/pool.hpp>
 
-#include <log4cpp/Category.hh>
+//protobuf
 #include <google/protobuf/message.h>
 
-#include <chrono>
-#include <utility>
+//mumlib
+#include "mumlib/Constants.hpp"
+#include "mumlib/Enums.hpp"
+#include "mumlib/Logger.hpp"
+#include "mumlib_private/CryptState.hpp"
+#include "mumlib_private/SslContextHelper.h"
+#include "mumlib_private/VarInt.hpp"
+
 
 namespace mumlib {
-
-    constexpr int MAX_UDP_LENGTH = 1024;
-    constexpr int MAX_TCP_LENGTH = 129 * 1024; // 128 kB + some reserve
-
     using namespace std;
     using namespace boost::asio;
     using namespace boost::asio::ip;
 
     typedef function<bool(MessageType, uint8_t *, int)> ProcessControlMessageFunction;
-
     typedef function<bool(AudioPacketType, uint8_t *, int)> ProcessEncodedAudioPacketFunction;
 
-    class TransportException : public MumlibException {
-    public:
-        TransportException(string message) : MumlibException(std::move(message)) { }
-    };
-
-    /* This helper is needed because the sslContext and sslSocket are initialized in
-     * the Transport constructor and there wasn't an easier way of passing these two
-     * arguments.
-     * TODO: add support for password callback.
-     */
-    class SslContextHelper : boost::noncopyable {
-        public:
-            SslContextHelper(boost::asio::ssl::context &ctx,
-                    std::string cert_file, std::string privkey_file);
-            ~SslContextHelper() { };
-    };
 
     class Transport : boost::noncopyable {
     public:
-        Transport(io_service &ioService,
+        Transport(
                   ProcessControlMessageFunction processControlMessageFunc,
                   ProcessEncodedAudioPacketFunction processEncodedAudioPacketFunction,
-                  bool noUdp = false,
                   std::string cert_file = "",
                   std::string privkey_file = "");
 
@@ -61,13 +46,6 @@ namespace mumlib {
                      int port,
                      string user,
                      string password);
-
-        void connect(string host,
-                     int port,
-                     string user,
-                     string password,
-                     string cert_file,
-                     string privkey_file);
 
         void disconnect();
 
@@ -81,10 +59,14 @@ namespace mumlib {
 
         void sendEncodedAudioPacket(uint8_t *buffer, int length);
 
-    private:
-        log4cpp::Category &logger;
+        void run(){
+            ioService.run();
+        }
 
-        io_service &ioService;
+    private:
+        Logger logger;
+
+        boost::asio::io_service ioService;
 
         pair<string, int> connectionParams;
 
@@ -93,12 +75,6 @@ namespace mumlib {
         ProcessControlMessageFunction processMessageFunction;
 
         ProcessEncodedAudioPacketFunction processEncodedAudioPacketFunction;
-
-#ifdef __MSYS__
-        bool noUdp;
-#else
-        const bool noUdp;
-#endif
 
         volatile bool udpActive;
 

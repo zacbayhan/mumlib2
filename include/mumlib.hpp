@@ -1,30 +1,18 @@
 #pragma once
 
-#include "mumlib/Callback.hpp"
-#include "mumlib/enums.hpp"
-
-#ifdef __MSYS__
-#define __MSABI_LONG(x) x
-#endif
-
-#include <boost/asio.hpp>
-#include <boost/noncopyable.hpp>
-
+//stdlib
+#include <cstdint>
+#include <stdexcept>
 #include <string>
 
+//mumlib
+#include "mumlib/Callback.hpp"
+#include "mumlib/Constants.hpp"
+#include "mumlib/Enums.hpp"
+#include "mumlib/Exceptions.hpp"
+#include "mumlib/Logger.hpp"
+
 namespace mumlib {
-
-    constexpr int DEFAULT_OPUS_ENCODER_BITRATE = 8000;
-    constexpr int DEFAULT_OPUS_SAMPLE_RATE = 16000;
-    constexpr int DEFAULT_OPUS_NUM_CHANNELS = 1;
-
-    using namespace std;
-    using namespace boost::asio;
-
-    class MumlibException : public runtime_error {
-    public:
-        MumlibException(string message) : runtime_error(message) { }
-    };
 
     struct MumlibConfiguration {
         int opusEncoderBitrate = DEFAULT_OPUS_ENCODER_BITRATE;
@@ -37,27 +25,26 @@ namespace mumlib {
 
     struct MumbleUser {
         int32_t sessionId;
-        string name;
+        std::string name;
     };
 
     struct MumbleChannel {
         int32_t channelId;
-        string name;
-        string description;
+        std::string name;
+        std::string description;
     };
 
-    struct _Mumlib_Private;
+    class MumlibPrivate;
 
-
-    class Mumlib : boost::noncopyable {
+    class Mumlib {
     public:
+        //mark as non-copyable
+        Mumlib(const Mumlib&) = delete;
+        Mumlib& operator=(const Mumlib&) = delete;
+
         explicit Mumlib(Callback &callback);
 
-        Mumlib(Callback &callback, io_service &ioService);
-
-        Mumlib(Callback &callback, MumlibConfiguration &configuration);
-
-        Mumlib(Callback &callback, io_service &ioService, MumlibConfiguration &configuration);
+        explicit Mumlib(Callback &callback, MumlibConfiguration &configuration);
 
         virtual ~Mumlib();
 
@@ -95,7 +82,7 @@ namespace mumlib {
 
         bool isSessionIdValid(int sessionId);
     private:
-        _Mumlib_Private *impl;
+        MumlibPrivate *impl;
 
         int getChannelIdBy(std::string channelName);
 

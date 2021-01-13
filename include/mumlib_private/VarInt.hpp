@@ -1,16 +1,14 @@
 #pragma once
 
-#include <mumlib.hpp>
-
-#include <stdint.h>
+//stdlib
+#include <cstdint>
 #include <vector>
 #include <string>
 
+//mumlib
+#include <mumlib.hpp>
+
 namespace mumlib {
-    class VarIntException : public MumlibException {
-    public:
-        VarIntException(std::string message) : MumlibException(message) { }
-    };
 
     class VarInt {
     public:

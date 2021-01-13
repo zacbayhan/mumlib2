@@ -1,18 +1,17 @@
-#include "mumlib.hpp"
-
-#include "log4cpp/Category.hh"
-#include "log4cpp/FileAppender.hh"
-#include "log4cpp/OstreamAppender.hh"
-
+//stdlib
 #include <chrono>
 #include <thread>
-#include <mumlib/Transport.hpp>
+
+//mumlib
+#include <mumlib.hpp>
+#include <mumlib/Exceptions.hpp>
+#include <mumlib/Logger.hpp>
 
 class MyCallback : public mumlib::BasicCallback {
 public:
     mumlib::Mumlib *mum;
 
-    log4cpp::Category &logger = log4cpp::Category::getRoot();
+    mumlib::Logger logger = mumlib::Logger("");
 
     virtual void audio(int target,
                        int sessionId,
@@ -36,35 +35,37 @@ public:
 };
 
 int main(int argc, char *argv[]) {
+    mumlib::Logger logger = mumlib::Logger("");
 
-    log4cpp::Appender *appender1 = new log4cpp::OstreamAppender("console", &std::cout);
-    appender1->setLayout(new log4cpp::BasicLayout());
-    log4cpp::Category &logger = log4cpp::Category::getRoot();
-    logger.setPriority(log4cpp::Priority::NOTICE);
-    logger.addAppender(appender1);
-
-    if (argc < 3 || argc == 4 || argc > 5) {
-        logger.crit("Usage: %s {server} {password} [{certfile} {keyfile}]", argv[0]);
+    if (argc < 5) {
+        logger.crit("Usage: %s {server} {port} {username} {password} [{certfile} {keyfile}]", argv[0]);
         return 1;
+    }
+  
+    mumlib::MumlibConfiguration conf;
+    conf.opusEncoderBitrate = 16000;
+
+    std::string server = argv[1];
+    uint16_t port = std::stoi(argv[2]);
+    std::string username = argv[3];
+    std::string password = argv[4];
+
+
+    if (argc >= 7) {
+        conf.cert_file = argv[5];
+        conf.privkey_file = argv[6];
     }
 
     MyCallback myCallback;
-
     while (true) {
         try {
-            mumlib::MumlibConfiguration conf;
-            conf.opusEncoderBitrate = 16000;
-            if ( argc > 3 && argc <= 5 ) {
-                conf.cert_file = argv[3];
-                conf.privkey_file = argv[4];
-            }
             mumlib::Mumlib mum(myCallback, conf);
             myCallback.mum = &mum;
-            mum.connect(argv[1], 1234, "mumlib_example2", argv[2]);
+            mum.connect(server, port, username, password);
             mum.run();
+
         } catch (mumlib::TransportException &exp) {
             logger.error("TransportException: %s.", exp.what());
-
             logger.notice("Attempting to reconnect in 5 s.");
             std::this_thread::sleep_for(std::chrono::seconds(5));
         }

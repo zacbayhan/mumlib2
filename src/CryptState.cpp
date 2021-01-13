@@ -37,12 +37,16 @@
  * OCB with something else or get yourself a license.
  */
 
-
-#include "mumlib/CryptState.hpp"
-
-#include <openssl/rand.h>
-#include <cstring>
+//stdlib
 #include <cstdint>
+#include <cstring>
+
+//openssl
+#include <openssl/rand.h>
+
+//mumlib
+#include "mumlib_private/CryptState.hpp"
+
 
 using namespace std;
 
@@ -195,7 +199,11 @@ bool mumlib::CryptState::decrypt(const unsigned char *source, unsigned char *dst
 #define SHIFTBITS 63
 typedef uint64_t subblock;
 
-#define SWAP64(x) (__builtin_bswap64(x))
+#ifdef _MSC_VER
+    #define SWAP64(x) (_byteswap_uint64(x))
+#else
+    #define SWAP64(x) (__builtin_bswap64(x))
+#endif
 #define SWAPPED(x) SWAP64(x)
 
 typedef subblock keyblock[BLOCKSIZE];
