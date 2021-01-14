@@ -12,7 +12,7 @@ namespace mumlib {
 
     class VarInt {
     public:
-        VarInt(uint8_t *encoded);
+        VarInt(const uint8_t *encoded);
 
         VarInt(std::vector<uint8_t> encoded);
 

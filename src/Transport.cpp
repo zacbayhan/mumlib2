@@ -221,7 +221,8 @@ void mumlib::Transport::doReceiveUdp()
                             throwTransportException("UDP packet: decryption failed");
                         }
 
-                        processAudioPacket(plainBuffer, plainBufferLength);
+                        AudioPacket packet(plainBuffer, plainBufferLength);
+                        processEncodedAudioPacketFunction(packet);
                     }
 
                     doReceiveUdp();
@@ -366,8 +367,8 @@ void mumlib::Transport::processMessageInternal(MessageType messageType, uint8_t 
     switch (messageType) {
 
         case MessageType::UDPTUNNEL: {
-            //logger.warn("Received %d B of encoded audio data via TCP.", length);
-            processAudioPacket(buffer, length);
+            AudioPacket packet(buffer, length);
+            processEncodedAudioPacketFunction(packet);
         }
             break;
         case MessageType::AUTHENTICATE: {
@@ -590,21 +591,3 @@ void mumlib::Transport::sendEncodedAudioPacket(uint8_t *buffer, int length) {
         sendSsl(packetBuff, length + sizeof(netUdptunnelType) + sizeof(netLength));
     }
 }
-
-void mumlib::Transport::processAudioPacket(uint8_t *buff, int length) {
-    auto type = static_cast<AudioPacketType >((buff[0] & 0xE0) >> 5);
-    switch (type) {
-        case AudioPacketType::CELT_Alpha:
-        case AudioPacketType::Speex:
-        case AudioPacketType::CELT_Beta:
-        case AudioPacketType::OPUS:
-            processEncodedAudioPacketFunction(type, buff, length);
-            //logger.warn("audio typehex: 0x%2x typedec: %d", buff[0], type);
-            break;
-        case AudioPacketType::Ping:
-            break;
-        default:
-            logger.error("Not recognized audio type: %xd.", buff[0]);
-    }
-}
-

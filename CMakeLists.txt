@@ -53,6 +53,7 @@ set(MUMLIB_SOURCES
     src/mumlib.cpp
 
     src/Audio.cpp
+    src/AudioPacket.cpp
     src/Callback.cpp
     src/CryptState.cpp
     src/Logger.cpp
@@ -66,9 +67,12 @@ set(MUMLIB_HEADERS
     include/mumlib/Constants.hpp
     include/mumlib/Enums.hpp
     include/mumlib/Logger.hpp
-    
+    include/mumlib/Structs.hpp
+
     include/mumlib_private/Audio.hpp
+    include/mumlib_private/AudioPacket.hpp
     include/mumlib_private/CryptState.hpp
+    include/mumlib_private/MumlibPrivate.h
     include/mumlib_private/Transport.hpp
     include/mumlib_private/VarInt.hpp
 )

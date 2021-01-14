@@ -23,14 +23,13 @@ namespace mumlib {
                 int target,
                 int sessionId,
                 int sequenceNumber,
-                int16_t *pcm_data,
-                uint32_t pcm_data_size) { };
+                const std::vector<int16_t>&) { };
 
         virtual void unsupportedAudio(
                 int target,
                 int sessionId,
                 int sequenceNumber,
-                uint8_t *encoded_audio_data,
+                const uint8_t *encoded_audio_data,
                 uint32_t encoded_audio_data_size) { };
 
         virtual void serverSync(
@@ -166,14 +165,13 @@ namespace mumlib {
                 int target,
                 int sessionId,
                 int sequenceNumber,
-                int16_t *pcm_data,
-                uint32_t pcm_data_size) override;
+                const std::vector<int16_t>& ) override;
 
         void unsupportedAudio(
                 int target,
                 int sessionId,
                 int sequenceNumber,
-                uint8_t *encoded_audio_data,
+                const uint8_t *encoded_audio_data,
                 uint32_t encoded_audio_data_size) override;
 
         void serverSync(

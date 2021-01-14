@@ -28,43 +28,37 @@ namespace mumlib {
         //mark as non-copyable
         Audio(const Audio&) = delete;
         Audio& operator=(const Audio&) = delete;
+        
+        //ctor/dtor
+        explicit Audio(uint32_t encoding_bitrate);
+        ~Audio();
 
-        explicit Audio(int sampleRate=DEFAULT_OPUS_SAMPLE_RATE,
-                       int bitrate=DEFAULT_OPUS_ENCODER_BITRATE,
-                       int channels=DEFAULT_OPUS_NUM_CHANNELS);
-
-        virtual ~Audio();
-
-        IncomingAudioPacket decodeIncomingAudioPacket(uint8_t *inputBuffer, int inputBufferLength);
-
-        std::pair<int, bool> decodeOpusPayload(uint8_t *inputBuffer,
-                                               int inputLength,
-                                               int16_t *pcmBuffer,
-                                               int pcmBufferSize);
+        int decoderProcess(const std::vector<uint8_t>& input, int16_t* pcmBuffer, int pcmBufferSize);
 
         int encodeAudioPacket(
-                int target,
-                int16_t *inputPcmBuffer,
-                int inputLength,
-                uint8_t *outputBuffer,
-                int outputBufferSize = MAX_UDP_LENGTH);
-
-        void setOpusEncoderBitrate(int bitrate);
-
-        int getOpusEncoderBitrate();
-
-        void resetEncoder();
+            int target,
+            int16_t* inputPcmBuffer,
+            int inputLength,
+            uint8_t* outputBuffer,
+            int outputBufferSize = MAX_UDP_LENGTH);
 
     private:
-        uint32_t _samplerate = 0;
-
+        //encoder
+        void encoderCreate(uint32_t sampleRate, uint32_t channels);
+        void encoderDestroy();
+        void encoderReset();
+        void encoderSetBitrate(uint32_t bitrate);
+       
+        //decoder
+        void decoderCreate(uint32_t sampleRate, uint32_t channels);
+        void decoderDestroy();
+    private:
         Logger logger = Logger("Mumlib.audio");
 
-        OpusDecoder * opusDecoder = nullptr;
-        OpusEncoder * opusEncoder = nullptr;
+        OpusDecoder* _decoder = nullptr;
+        OpusEncoder* _encoder = nullptr;
 
         int64_t outgoingSequenceNumber = 0;
-
         std::chrono::time_point<std::chrono::system_clock> lastEncodedAudioPacketTimestamp;
     };
 }

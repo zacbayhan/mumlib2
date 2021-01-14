@@ -17,8 +17,7 @@ namespace mumlib {
 
         MumlibPrivate(Callback &callback, MumlibConfiguration &configuration)
         : _callback(callback), _configuration(configuration) {
-            _audio = std::make_unique<Audio>(configuration.opusSampleRate, configuration.opusEncoderBitrate, configuration.opusChannels);
-            _audio->setOpusEncoderBitrate(configuration.opusEncoderBitrate);
+            _audio = std::make_unique<Audio>(configuration.opusEncoderBitrate);
         }
 
         ConnectionState GetConnectionState() {
@@ -45,7 +44,7 @@ namespace mumlib {
             if(!_transport){
                 _transport = std::make_unique<Transport>(
                     boost::bind(&MumlibPrivate::processIncomingTcpMessage, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3),
-                    boost::bind(&MumlibPrivate::processAudioPacket, this,boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3),
+                    boost::bind(&MumlibPrivate::processAudioPacket, this, boost::placeholders::_1),
                     _configuration.cert_file,
                     _configuration.privkey_file);
             }
@@ -247,31 +246,30 @@ namespace mumlib {
         std::vector<MumbleChannel> listMumbleChannel;
 
 
-        bool processAudioPacket(AudioPacketType type, uint8_t *buffer, int length) {
-            logger.info("Got %d B of encoded audio data.", length);
+        bool processAudioPacket(AudioPacket& packet) {
             try {
-                auto incomingAudioPacket = _audio->decodeIncomingAudioPacket(buffer, length);
-
-                if (type == AudioPacketType::OPUS) {
-                    int16_t frame_size = DEFAULT_OPUS_SAMPLE_RATE / 1000 * 20 * 8;
-
+                if (packet.GetType() == AudioPacketType::Opus) {
                     std::vector<int16_t> pcmData;
+                    int16_t frame_size = 48000 / 1000 * 40 * 8;
+
                     pcmData.resize(frame_size);
+                    int len = _audio->decoderProcess(packet.GetAudioPayload(), pcmData.data(), pcmData.size());
+                    pcmData.resize(len);
 
-                    auto status = _audio->decodeOpusPayload(incomingAudioPacket.audioPayload,
-                                                          incomingAudioPacket.audioPayloadLength,
-                                                          pcmData.data(),
-                                                          pcmData.size());
-
-                    _callback.audio(incomingAudioPacket.target, incomingAudioPacket.sessionId, incomingAudioPacket.sequenceNumber, pcmData.data(), status.first);
+                    _callback.audio(
+                        packet.GetTarget(), 
+                        packet.GetAudioSessionId(), 
+                        packet.GetAudioSequenceNumber(), 
+                        pcmData);
 
                 } else {
-                    logger.warn("Incoming audio packet doesn't contain Opus data, calling unsupportedAudio callback. Type: %d", type);
-                    _callback.unsupportedAudio(incomingAudioPacket.target,
-                                              incomingAudioPacket.sessionId,
-                                              incomingAudioPacket.sequenceNumber,
-                                              incomingAudioPacket.audioPayload,
-                                              incomingAudioPacket.audioPayloadLength);
+                    logger.warn("Incoming audio packet doesn't contain Opus data, calling unsupportedAudio callback. Type: %d", packet.GetType());
+                    _callback.unsupportedAudio(
+                        packet.GetTarget(),
+                        packet.GetAudioSessionId(),
+                        packet.GetAudioSequenceNumber(),
+                        packet.GetAudioPayload().data(),
+                        packet.GetAudioPayload().size());
                 }
 
             } catch (mumlib::AudioException &exp) {

@@ -18,6 +18,7 @@
 #include "mumlib/Constants.hpp"
 #include "mumlib/Enums.hpp"
 #include "mumlib/Logger.hpp"
+#include "mumlib_private/AudioPacket.hpp"
 #include "mumlib_private/CryptState.hpp"
 #include "mumlib_private/SslContextHelper.h"
 #include "mumlib_private/VarInt.hpp"
@@ -29,7 +30,7 @@ namespace mumlib {
     using namespace boost::asio::ip;
 
     typedef function<bool(MessageType, uint8_t *, int)> ProcessControlMessageFunction;
-    typedef function<bool(AudioPacketType, uint8_t *, int)> ProcessEncodedAudioPacketFunction;
+    typedef function<bool(AudioPacket&)> ProcessEncodedAudioPacketFunction;
 
 
     class Transport : boost::noncopyable {
@@ -125,8 +126,6 @@ namespace mumlib {
         void sendUdpPing();
 
         void throwTransportException(string message);
-
-        void processAudioPacket(uint8_t *buff, int length);
     };
 
 

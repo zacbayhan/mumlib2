@@ -1,5 +1,8 @@
 #pragma once
 
+//stdlib
+#include <cstdint>
+
 namespace mumlib {
     enum class MessageType {
         VERSION = 0,
@@ -37,13 +40,13 @@ namespace mumlib {
         FAILED
     };
 
-    enum class AudioPacketType {
-        CELT_Alpha,
-        Ping,
-        Speex,
-        CELT_Beta,
-        OPUS
-    };
+	enum class AudioPacketType : uint8_t {
+		CeltAplha = 0b00000000,
+		Ping      = 0b00100000,
+		Speex     = 0b01000000,
+        CeltBeta  = 0b01100000,
+        Opus      = 0b10000000,
+	};
 
     enum class UserState {
         MUTE,
