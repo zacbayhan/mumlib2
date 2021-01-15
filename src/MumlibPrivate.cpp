@@ -31,12 +31,15 @@ namespace mumlib {
         }
 
         //encode
-        const int len = _audio->EncoderProcess(
-            pcmData, 
-            pcmLength, 
-            _audio_buffer_tx.data(), 
-            _audio_buffer_tx.size()
-        );
+        int len = 0;
+        if (pcmData && pcmLength) {
+            len = _audio->EncoderProcess(
+                pcmData,
+                pcmLength,
+                _audio_buffer_tx.data(),
+                _audio_buffer_tx.size()
+            );
+        }
 
         //create audipacket
         auto encoded = AudioPacket::CreateAudioOpusPacket(
@@ -44,10 +47,16 @@ namespace mumlib {
             _audio_seq_number,
             _audio_buffer_tx.data(),
             len,
-            false).Encode();
+            len==0).Encode();
 
         //update timestamp and sequence
-        _audio_seq_number += 100 * pcmLength / mumble_audio_samplerate;
+        if (len > 0) {
+            _audio_seq_number += 100 * pcmLength / mumble_audio_samplerate;
+        }
+        else {
+            _audio_seq_number = 0;
+            _audio->EncoderReset();
+        }
         _audio_last_send = std::chrono::system_clock::now();
 
         //send
