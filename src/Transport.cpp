@@ -221,7 +221,7 @@ void mumlib::Transport::doReceiveUdp()
                             throwTransportException("UDP packet: decryption failed");
                         }
 
-                        AudioPacket packet(plainBuffer, plainBufferLength);
+                        auto packet = AudioPacket::Decode(plainBuffer, plainBufferLength, 0);
                         processEncodedAudioPacketFunction(packet);
                     }
 
@@ -292,7 +292,7 @@ void mumlib::Transport::pingTimerTick(const boost::system::error_code &e) {
     pingTimer.async_wait(boost::bind(&Transport::pingTimerTick, this, _1));
 }
 
-void mumlib::Transport::sendUdpAsync(uint8_t *buff, int length) {
+void mumlib::Transport::sendUdpAsync(const uint8_t *buff, int length) {
     if (length > MAX_UDP_LENGTH - 4) {
         throwTransportException("maximum allowed: data length is %d" + to_string(MAX_UDP_LENGTH - 4));
     }
@@ -367,7 +367,7 @@ void mumlib::Transport::processMessageInternal(MessageType messageType, uint8_t 
     switch (messageType) {
 
         case MessageType::UDPTUNNEL: {
-            AudioPacket packet(buffer, length);
+            auto packet = AudioPacket::Decode(buffer, length, 0);
             processEncodedAudioPacketFunction(packet);
         }
             break;
@@ -462,30 +462,19 @@ void mumlib::Transport::processMessageInternal(MessageType messageType, uint8_t 
 
 void mumlib::Transport::sendUdpPing()
 {
-    //logger.warn("Sending UDP ping.");
-
-    vector<uint8_t> message;
-    message.push_back(0x20);
-
-    auto timestampVarint = VarInt(static_cast<int64_t>(time(nullptr))).getEncoded();
-    message.insert(message.end(), timestampVarint.begin(), timestampVarint.end());
-
-    sendUdpAsync(&message[0], static_cast<int>(message.size()));
+    auto packet = AudioPacket::CreatePingPacket(time(nullptr)).Encode();
+    sendUdpAsync(packet.data(), packet.size());
 }
 
 void mumlib::Transport::sendSsl(uint8_t *buff, int length) {
+    if (!buff || !length) {
+        return;
+    }
 
     if (length > MAX_TCP_LENGTH) {
         logger.warn("Sending %d B of data via SSL. Maximal allowed data length to receive is %d B.", length,
                     MAX_TCP_LENGTH);
     }
-
-    //logger.warn("Sending %d bytes of data.", length);
-
-    if (!buff) {
-        return;
-    }
-
     try {
         write(sslSocket, boost::asio::buffer(buff, static_cast<size_t>(length)));
     } catch (boost::system::system_error &err) {
@@ -564,7 +553,7 @@ mumlib::SslContextHelper::SslContextHelper(ssl::context &ctx, std::string cert_f
 }
 
 
-void mumlib::Transport::sendEncodedAudioPacket(uint8_t *buffer, int length) {
+void mumlib::Transport::sendEncodedAudioPacket(const uint8_t *buffer, int length) {
     if (state != ConnectionState::CONNECTED) {
         logger.warn("sendEncodedAudioPacket: Connection not established.");
         return;

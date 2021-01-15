@@ -57,6 +57,7 @@ set(MUMLIB_SOURCES
     src/Callback.cpp
     src/CryptState.cpp
     src/Logger.cpp
+    src/MumlibPrivate.cpp
     src/Transport.cpp
     src/VarInt.cpp
 )

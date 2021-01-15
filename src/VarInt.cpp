@@ -1,80 +1,158 @@
+#include "mumlib/Exceptions.hpp"
 #include "mumlib_private/VarInt.hpp"
 
-mumlib::VarInt::VarInt(int64_t value) : value(value) { }
-mumlib::VarInt::VarInt(const uint8_t *encoded) : value(parseVariant(encoded)) { }
-mumlib::VarInt::VarInt(std::vector<uint8_t> encoded) : value(parseVariant(&encoded[0])) { }
+namespace mumlib {
+    VarInt::VarInt(const uint8_t* buf)
+    {
+        parse(buf);
+    }
 
-/*
- * This code was taken from Mumble source code
- * https://github.com/mumble-voip/mumble/blob/master/src/PacketDataStream.h
- */
-int64_t mumlib::VarInt::parseVariant(const uint8_t *buffer) {
-    int64_t v = buffer[0];
-    if ((v & 0x80) == 0x00) {
-        return (v & 0x7F);
-    } else if ((v & 0xC0) == 0x80) {
-        return (v & 0x3F) << 8 | buffer[1];
-    } else if ((v & 0xF0) == 0xF0) {
-        switch (v & 0xFC) {
-            case 0xF0:
-                return buffer[1] << 24 | buffer[2] << 16 | buffer[3] << 8 | buffer[4];
-            case 0xF4:
-                //throw VarIntException("currently unsupported 8-byte varint size");
-            case 0xF8:
-            case 0xFC:
-                //throw VarIntException("currently negative varints aren't supported");
-            default:
-                break;
+    VarInt::VarInt(int8_t val) {
+        _val = val;
+    }
+
+    VarInt::VarInt(int16_t val) {
+        _val = val;
+    }
+
+    VarInt::VarInt(int32_t val)
+    {
+        _val = val;
+    }
+
+    VarInt::VarInt(int64_t val)
+    {
+        _val = val;
+    }
+
+    size_t VarInt::Size() const
+    {
+        return _size;
+    }
+
+    size_t VarInt::Value() const
+    {
+        return _val;
+    }
+
+    std::vector<uint8_t> VarInt::Encode() const
+    {
+        std::vector<uint8_t> result;
+
+        if (_val < 0) {
+            throw VarIntException("currently negative not supported");
         }
-    } else if ((v & 0xF0) == 0xE0) {
-        return (v & 0x0F) << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3];
-    } else if ((v & 0xE0) == 0xC0) {
-        return (v & 0x1F) << 16 | buffer[1] << 8 | buffer[2];
-    }
 
-    return 0;
-    //throw VarIntException("invalid varint");
-}
-
-std::vector<uint8_t> mumlib::VarInt::getEncoded() const {
-    std::vector<uint8_t> encoded;
-    int64_t i = this->value;
-
-    if ((i & 0x8000000000000000LL) && (~i < 0x100000000LL)) {
-        i = ~i;
-        if (i <= 0x3) {
-            encoded.push_back(static_cast<unsigned char &&>(0xFC | i));
-            return encoded;
-        } else {
-            encoded.push_back(0xF8);
+        //7 bit positive (0xxxxxxx)
+        if (_val < 0x80) {
+            result.reserve(1);
+            result.push_back(_val & 0x7F);
+            return result;
         }
+
+        //14 bit positive (10xxxxxx + 1b)
+        if (_val < 0x4000) {
+            result.reserve(2);
+            result.push_back(static_cast<uint8_t&&>(0x80 | (_val >> 8)));
+            result.push_back(static_cast<uint8_t&&>(_val & 0xFF));
+            return result;
+        }
+
+        //21 bit positive (110xxxxx + 2b)
+        if (_val < 0x200000) {
+            result.reserve(3);
+            result.push_back(static_cast<uint8_t&&>(0xC0 | (_val >> 16)));
+            result.push_back(static_cast<uint8_t&&>((_val >> 8) & 0xFF));
+            result.push_back(static_cast<uint8_t&&>(_val & 0xFF));
+            return result;
+        }
+
+        //28 bit positive (1110xxxx + 3b)
+        else if (_val < 0x10000000) {
+            result.reserve(4);
+            result.push_back(static_cast<uint8_t&&>(0xE0 | (_val >> 24)));
+            result.push_back(static_cast<uint8_t&&>((_val >> 16) & 0xFF));
+            result.push_back(static_cast<uint8_t&&>((_val >> 8) & 0xFF));
+            result.push_back(static_cast<uint8_t&&>(_val & 0xFF));
+            return result;
+        }
+
+        //64 bit positive (111100__ + int64)
+        result.reserve(9);
+        result.push_back(0xF4);
+        result.push_back((_val >> 56) & 0xFF);
+        result.push_back((_val >> 48) & 0xFF);
+        result.push_back((_val >> 40) & 0xFF);
+        result.push_back((_val >> 32) & 0xFF);
+        result.push_back((_val >> 24) & 0xFF);
+        result.push_back((_val >> 16) & 0xFF);
+        result.push_back((_val >> 8) & 0xFF);
+        result.push_back((_val >> 0) & 0xFF);
+
+        return result;
     }
 
-    if (i < 0x80) {
-        encoded.push_back(static_cast<unsigned char &&>(i));
-    } else if (i < 0x4000) {
-        encoded.push_back(static_cast<unsigned char &&>(0x80 | (i >> 8)));
-        encoded.push_back(static_cast<unsigned char &&>(i & 0xFF));
-    } else if (i < 0x200000) {
-        encoded.push_back(static_cast<unsigned char &&>(0xC0 | (i >> 16)));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 8) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>(i & 0xFF));
-    } else if (i < 0x10000000) {
-        encoded.push_back(static_cast<unsigned char &&>(0xE0 | (i >> 24)));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 16) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 8) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>(i & 0xFF));
-    } else {
-        encoded.push_back(0xF4);
-        encoded.push_back(static_cast<unsigned char &&>((i >> 56) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 48) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 40) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 32) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 24) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 16) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>((i >> 8) & 0xFF));
-        encoded.push_back(static_cast<unsigned char &&>(i & 0xFF));
-    }
+    void VarInt::parse(const uint8_t* buf)
+    {
+        _val = buf[0];
+        _size = 0;
 
-    return encoded;
+        //7 bit positive (0xxxxxxx)
+        if ((buf[0] & 0b1000'0000) == 0b0000'0000) {
+            _val = _val & 0b0111'1111;
+            _size = 1;
+            return;
+        }
+
+        //14 bit positive (10xxxxxx + 1b)
+        if ((buf[0] & 0b1100'0000) == 0b1000'0000) {
+            _val = ((_val & 0b0011'1111) << 8) | buf[1];
+            _size = 2;
+            return;
+        }
+
+        //21 bit positive (110xxxxx + 2b)
+        if ((buf[0] & 0b1110'0000) == 0b1100'0000) {
+            _val = ((_val & 0b0001'1111) << 16) | (buf[1] << 8) | buf[2];
+            _size = 3;
+            return;
+        }
+
+        //28 bit positive (1110xxxx + 3b)
+        if ((buf[0] & 0b1111'0000) == 0b1110'0000) {
+            _val = ((_val & 0b0000'1111) << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+            _size = 4;
+            return;
+        }
+
+        //32 bit positive (111100__ + int)
+        if ((buf[0] & 0b1111'1100) == 0b1111'0000) {
+            _val = _byteswap_uint64(*reinterpret_cast<const int32_t*>(buf + 1));
+            _size = 5;
+            return;
+        }
+
+        //64 bit positive (111100__ + int64)
+        if ((buf[0] & 0b1111'1100) == 0b1111'0100) {
+            _val = _byteswap_uint64(*reinterpret_cast<const int64_t*>(buf + 1));
+            _size = 9;
+            return;
+        }
+
+        //negative recursive
+        if ((buf[0] & 0b1111'1100) == 0b1111'1000) {
+            _val = 0;
+            _size = 0;
+            throw VarIntException("currently negative recursive aren't supported");
+            return;
+        }
+
+        //negative two bit
+        if ((buf[0] & 0b1111'1100) == 0b1111'1100) {
+            _val = 0;
+            _size = 0;
+            throw VarIntException("currently negative twobits aren't supported");
+            return;
+        } 
+    }
 }

@@ -13,16 +13,6 @@
 #include "mumlib/Logger.hpp"
 
 namespace mumlib {
-
-    struct IncomingAudioPacket {
-        AudioPacketType type;
-        int target;
-        int64_t sessionId;
-        int64_t sequenceNumber;
-        uint8_t *audioPayload;
-        int audioPayloadLength;
-    };
-
     class Audio {
     public:
         //mark as non-copyable
@@ -34,19 +24,16 @@ namespace mumlib {
         ~Audio();
 
         int decoderProcess(const std::vector<uint8_t>& input, int16_t* pcmBuffer, int pcmBufferSize);
-
-        int encodeAudioPacket(
-            int target,
-            int16_t* inputPcmBuffer,
-            int inputLength,
-            uint8_t* outputBuffer,
-            int outputBufferSize = MAX_UDP_LENGTH);
+        
+        int EncoderProcess(const int16_t* pcmData, size_t pcmLength, uint8_t* encodedBuffer, size_t outputBufferSize);
+        int EncoderProcess(const std::vector<int16_t>& input, uint8_t* encodedBuffer, size_t outputBufferSize);
+        void EncoderReset();
 
     private:
         //encoder
         void encoderCreate(uint32_t sampleRate, uint32_t channels);
         void encoderDestroy();
-        void encoderReset();
+
         void encoderSetBitrate(uint32_t bitrate);
        
         //decoder
@@ -57,8 +44,5 @@ namespace mumlib {
 
         OpusDecoder* _decoder = nullptr;
         OpusEncoder* _encoder = nullptr;
-
-        int64_t outgoingSequenceNumber = 0;
-        std::chrono::time_point<std::chrono::system_clock> lastEncodedAudioPacketTimestamp;
     };
 }

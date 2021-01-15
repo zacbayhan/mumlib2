@@ -15,6 +15,11 @@ namespace mumlib {
         explicit AudioException(std::string message) : MumlibException(message) { }
     };
 
+    class AudioPacketException : public MumlibException {
+    public:
+        explicit AudioPacketException(std::string message) : MumlibException(message) { }
+    };
+
     class TransportException : public MumlibException {
     public:
         TransportException(std::string message) : MumlibException(std::move(message)) { }

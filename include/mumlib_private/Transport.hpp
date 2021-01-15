@@ -58,7 +58,7 @@ namespace mumlib {
 
         void sendControlMessage(MessageType type, google::protobuf::Message &message);
 
-        void sendEncodedAudioPacket(uint8_t *buffer, int length);
+        void sendEncodedAudioPacket(const uint8_t *buffer, int length);
 
         void run(){
             ioService.run();
@@ -121,7 +121,7 @@ namespace mumlib {
 
         void doReceiveUdp();
 
-        void sendUdpAsync(uint8_t *buff, int length);
+        void sendUdpAsync(const uint8_t *buff, int length);
 
         void sendUdpPing();
 

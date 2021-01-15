@@ -4,13 +4,8 @@
 
 namespace mumlib {
 
-    Mumlib::Mumlib(Callback &callback) {
-        MumlibConfiguration conf;
-        impl = new MumlibPrivate(callback, conf);
-    }
-
-    Mumlib::Mumlib(Callback &callback, MumlibConfiguration &configuration){
-        impl = new MumlibPrivate(callback, configuration);
+    Mumlib::Mumlib(Callback& callback) {
+        impl = new MumlibPrivate(callback);
     }
 
     Mumlib::~Mumlib() {
@@ -19,47 +14,47 @@ namespace mumlib {
     }
 
     ConnectionState Mumlib::getConnectionState() {
-        return impl->GetConnectionState();
+        return impl->TransportGetState();
     }
 
     int Mumlib::getChannelId() {
-        return impl->GetChannelId();
+        return impl->ChannelGetCurrent();
     }
 
     vector<mumlib::MumbleUser> Mumlib::getListAllUser() {
-        return impl->GetUsers();
+        return impl->UserGetList();
     }
 
     vector<mumlib::MumbleChannel> Mumlib::getListAllChannel() {
-        return impl->GetChannels();
+        return impl->ChannelGetList();
     }
 
     void Mumlib::connect(string host, int port, string user, string password) {
-        impl->Connect(host, port, user, password);
+        impl->TransportConnect(host, port, user, password);
     }
 
     void Mumlib::disconnect() {
-        impl->Disconnect();
+        impl->TransportDisconnect();
     }
 
     void Mumlib::run() {
-        impl->Run();
+        impl->TransportRun();
     }
 
     void Mumlib::sendAudioData(int16_t *pcmData, int pcmLength) {
-        impl->SendAudioData(pcmData, pcmLength);
+        impl->AudioSend(pcmData, pcmLength);
     }
 
     void Mumlib::sendAudioDataTarget(int targetId, int16_t *pcmData, int pcmLength) {
-        impl->SendAudioDataTarget(targetId, pcmData,pcmLength);
+        impl->AudioSendTarget(pcmData, pcmLength, targetId);
     }
 
     void Mumlib::sendTextMessage(string message) {
-        impl->SendTextMessage(message);
+        impl->TextSend(message);
     }
 
     void Mumlib::joinChannel(int channelId) {
-        impl->JoinChannel(channelId);
+        impl->ChannelJoin(channelId);
     }
 
     void Mumlib::joinChannel(string name) {
@@ -67,34 +62,34 @@ namespace mumlib {
     }
 
     void Mumlib::sendVoiceTarget(int targetId, VoiceTargetType type, int id) {
-        impl->SendVoiceTarget(targetId, type, id);
+        impl->VoicetargetSet(targetId, type, id);
     }
 
     void Mumlib::sendVoiceTarget(int targetId, VoiceTargetType type, string name, int &error) {
-        impl->SendVoiceTarget(targetId, type, name, error);
+        error = impl->VoicetargetSet(targetId, type, name);
     }
 
     void Mumlib::sendUserState(mumlib::UserState field, bool val) {
-        impl->SendUserState(field,val);
+        impl->UserSendState(field,val);
     }
 
     void Mumlib::sendUserState(mumlib::UserState field, std::string val) {
-        impl->SendUserState(field, val);
+        impl->UserSendState(field, val);
     }
 
     int Mumlib::getChannelIdBy(string name) {
-        return impl->GetChannelIdBy(name);
+        return impl->ChannelFind(name);
     }
 
     int Mumlib::getUserIdBy(string name) {
-        return impl->GetUserIdBy(name);
+        return impl->UserFind(name);
     }
 
     bool Mumlib::isSessionIdValid(int sessionId) {
-        return impl->IsSessionIdValid(sessionId);
+        return impl->UserExists(sessionId);
     }
 
     bool Mumlib::isChannelIdValid(int channelId) {
-        return impl->IsChannelIdValid(channelId);
+        return impl->ChannelExists(channelId);
     }
 }

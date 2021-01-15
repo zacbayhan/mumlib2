@@ -42,9 +42,10 @@ void BasicCallback::audio(
         int target,
         int sessionId,
         int sequenceNumber,
-        const std::vector<int16_t>& pcm_data) {
+        const int16_t* audio_buf,
+        size_t samples_count) {
     impl->logger.warn("audio: %d bytes of raw PCM data, target: %d, session: %d, seq: %d.",
-                       pcm_data.size(), target, sessionId, sequenceNumber);
+        samples_count, target, sessionId, sequenceNumber);
 }
 
 void BasicCallback::unsupportedAudio(

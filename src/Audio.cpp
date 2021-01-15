@@ -20,7 +20,7 @@ namespace mumlib {
     Audio::Audio(uint32_t bitrate) {
         encoderCreate(mumble_audio_samplerate, mumble_audio_channels);
         encoderSetBitrate(bitrate);
-        encoderReset();
+        EncoderReset();
 
         decoderCreate(mumble_audio_samplerate, mumble_audio_channels);
     }
@@ -53,7 +53,7 @@ namespace mumlib {
         }
     }
 
-    void mumlib::Audio::encoderReset() {
+    void mumlib::Audio::EncoderReset() {
         if (!_encoder) {
             throw AudioException("failed to reset encoder");
         }
@@ -62,8 +62,6 @@ namespace mumlib {
         if (status != OPUS_OK) {
             throw AudioException((boost::format("failed to reset encoder: %s") % opus_strerror(status)).str());
         }
-
-        outgoingSequenceNumber = 0;
     }
 
     void Audio::encoderSetBitrate(uint32_t bitrate)
@@ -82,6 +80,26 @@ namespace mumlib {
             throw AudioException((boost::format("failed to initialize transmission bitrate to %d B/s: %s")
                 % bitrate % opus_strerror(error)).str());
         }
+    }
+
+    int Audio::EncoderProcess(const int16_t* pcmData, size_t pcmLength, uint8_t* encodedBuffer, size_t outputBufferSize) {
+        int outputSize = opus_encode(
+            _encoder,
+            pcmData,
+            pcmLength,
+            encodedBuffer,
+            outputBufferSize
+        );
+
+        if (outputSize <= 0) {
+            throw AudioException((boost::format("failed to encode %d B of PCM data: %s") % pcmLength % opus_strerror(outputSize)).str());
+        }
+
+        return outputSize;
+    }
+
+    int Audio::EncoderProcess(const std::vector<int16_t>& input, uint8_t* encodedBuffer, size_t outputBufferSize) {
+        return EncoderProcess(input.data(), input.size(), encodedBuffer, outputBufferSize);
     }
 
     //
@@ -107,7 +125,6 @@ namespace mumlib {
     }
 
     int mumlib::Audio::decoderProcess(const std::vector<uint8_t>& input, int16_t* pcmBuffer, int pcmBufferSize) {
-
         int outputSize = opus_decode(
             _decoder,
             input.data(),
@@ -122,58 +139,5 @@ namespace mumlib {
         }
 
         return outputSize;
-    }
-
-    //
-    //
-    //
-
-
-    int mumlib::Audio::encodeAudioPacket(int target, int16_t *inputPcmBuffer, int inputLength, uint8_t *outputBuffer,
-                                         int outputBufferSize) {
-
-        using namespace std::chrono;
-
-        const int lastAudioPacketSentInterval = duration_cast<milliseconds>(
-                system_clock::now() - lastEncodedAudioPacketTimestamp).count();
-
-        if (lastAudioPacketSentInterval > RESET_SEQUENCE_NUMBER_INTERVAL.total_milliseconds() + 1000) {
-            logger.debug("Last audio packet was sent %d ms ago, resetting encoder.", lastAudioPacketSentInterval);
-            encoderReset();
-        }
-
-        std::vector<uint8_t> header;
-
-        header.push_back(0x80 | target);
-
-        auto sequenceNumberEnc = VarInt(outgoingSequenceNumber).getEncoded();
-        header.insert(header.end(), sequenceNumberEnc.begin(), sequenceNumberEnc.end());
-
-        uint8_t tmpOpusBuffer[1024];
-        const int outputSize = opus_encode(_encoder,
-                                           inputPcmBuffer,
-                                           inputLength,
-                                           tmpOpusBuffer,
-                                           min(outputBufferSize, 1024)
-        );
-
-        if (outputSize <= 0) {
-            throw AudioException((boost::format("failed to encode %d B of PCM data: %s") % inputLength %
-                                  opus_strerror(outputSize)).str());
-        }
-
-        auto outputSizeEnc = VarInt(outputSize).getEncoded();
-        header.insert(header.end(), outputSizeEnc.begin(), outputSizeEnc.end());
-
-        memcpy(outputBuffer, &header[0], header.size());
-        memcpy(outputBuffer + header.size(), tmpOpusBuffer, outputSize);
-
-        int incrementNumber = 100 * inputLength / mumble_audio_samplerate;
-
-        outgoingSequenceNumber += incrementNumber;
-
-        lastEncodedAudioPacketTimestamp = std::chrono::system_clock::now();
-
-        return outputSize + header.size();
     }
 }

@@ -3,30 +3,28 @@
 //stdlib
 #include <cstdint>
 #include <vector>
-#include <string>
-
-//mumlib
-#include <mumlib.hpp>
 
 namespace mumlib {
 
     class VarInt {
     public:
-        VarInt(const uint8_t *encoded);
+        explicit VarInt(const uint8_t* buf);
 
-        VarInt(std::vector<uint8_t> encoded);
+        explicit VarInt(int8_t val);
+        explicit VarInt(int16_t val);
+        explicit VarInt(int32_t val);
+        explicit VarInt(int64_t val);
 
-        VarInt(int64_t value);
+        [[nodiscard]] size_t Size() const;
+        [[nodiscard]] size_t Value() const;
 
-        int64_t getValue() const {
-            return this->value;
-        }
-
-        std::vector<uint8_t> getEncoded() const;
+        [[nodiscard]] std::vector<uint8_t> Encode() const;
+        
+    private:
+        void parse(const uint8_t* buf);
 
     private:
-        const int64_t value;
-
-        int64_t parseVariant(const uint8_t *buffer);
+        int64_t _val = 0;
+        size_t _size = 0;
     };
 }

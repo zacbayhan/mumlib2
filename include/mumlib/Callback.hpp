@@ -23,7 +23,8 @@ namespace mumlib {
                 int target,
                 int sessionId,
                 int sequenceNumber,
-                const std::vector<int16_t>&) { };
+                const int16_t* audio_buf,
+                size_t samples_count) { };
 
         virtual void unsupportedAudio(
                 int target,
@@ -165,7 +166,8 @@ namespace mumlib {
                 int target,
                 int sessionId,
                 int sequenceNumber,
-                const std::vector<int16_t>& ) override;
+                const int16_t* audio_buf,
+                size_t samples_count) override;
 
         void unsupportedAudio(
                 int target,
