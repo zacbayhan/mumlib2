@@ -111,6 +111,9 @@ target_link_libraries(mumlib PRIVATE Boost::boost Boost::system)
 target_link_libraries(mumlib PRIVATE OpenSSL::SSL)
 target_link_libraries(mumlib PRIVATE Opus::opus)
 target_link_libraries(mumlib PRIVATE protobuf::libprotobuf)
+if(WIN32)
+    target_link_libraries(mumlib PUBLIC Crypt32)
+endif()
 
 #Library/Properties
 if(MSVC)
