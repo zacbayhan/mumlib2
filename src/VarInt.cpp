@@ -20,6 +20,11 @@ namespace mumlib {
         _val = val;
     }
 
+    VarInt::VarInt(uint32_t val)
+    {
+        _val = val;
+    }
+
     VarInt::VarInt(int64_t val)
     {
         _val = val;

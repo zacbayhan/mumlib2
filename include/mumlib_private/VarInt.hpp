@@ -13,6 +13,7 @@ namespace mumlib {
         explicit VarInt(int8_t val);
         explicit VarInt(int16_t val);
         explicit VarInt(int32_t val);
+        explicit VarInt(uint32_t val);
         explicit VarInt(int64_t val);
 
         [[nodiscard]] size_t Size() const;
