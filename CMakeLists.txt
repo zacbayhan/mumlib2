@@ -51,10 +51,8 @@ protobuf_generate_cpp(MUMLIB_SOURCES_PROTO MUMLIB_HEADERS_PROTO "src/Mumble.prot
 # Library/Sources
 set(MUMLIB_SOURCES
     src/mumlib.cpp
-
     src/Audio.cpp
     src/AudioPacket.cpp
-    src/Callback.cpp
     src/CryptState.cpp
     src/Logger.cpp
     src/MumlibPrivate.cpp
