@@ -56,8 +56,6 @@ namespace mumlib {
     private:
         // Audio
         void audioCreate(uint32_t bitrate);
-        void audioResizeRxBuffer(uint32_t framelength);
-        void audioResizeTxBuffer(uint32_t buffersize);
 
         // Channel
         void channelEmplace(MumbleChannel& channel);
@@ -95,8 +93,8 @@ namespace mumlib {
         //Audio
         std::unique_ptr<Audio> _audio;
         uint32_t _audio_bitrate = mumble_audio_bitrate;
-        std::vector<int16_t> _audio_buffer_rx;
-        std::vector<uint8_t> _audio_buffer_tx;
+        std::array<int16_t, mumble_audio_samplerate*mumble_audio_maxframelength/1000> _audio_buffer_rx;
+        std::array<uint8_t, mumble_audio_samplerate*mumble_audio_maxframelength/1000> _audio_buffer_tx;
         std::chrono::time_point<std::chrono::system_clock> _audio_last_send;
         std::chrono::seconds _audio_reset_timeout = 5s;
         uint32_t _audio_seq_number = 0;

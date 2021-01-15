@@ -5,8 +5,6 @@ namespace mumlib {
 	MumlibPrivate::MumlibPrivate(Callback& callback) : _callback(callback)
 	{
 		audioCreate(_audio_bitrate);
-        audioResizeRxBuffer(_audio_rx_buffer_length);
-        audioResizeTxBuffer(_audio_tx_buffer_size);
 	}
 
 	//
@@ -49,7 +47,7 @@ namespace mumlib {
             false).Encode();
 
         //update timestamp and sequence
-        _audio_seq_number = 100 * pcmLength / mumble_audio_samplerate;;
+        _audio_seq_number += 100 * pcmLength / mumble_audio_samplerate;
         _audio_last_send = std::chrono::system_clock::now();
 
         //send
@@ -60,17 +58,6 @@ namespace mumlib {
 	{
 		_audio = std::make_unique<Audio>(bitrate);
 	}
-
-    void MumlibPrivate::audioResizeRxBuffer(uint32_t framelength)
-    {
-        _audio_buffer_rx.resize(mumble_audio_samplerate * mumble_audio_channels * framelength / 1000);
-    }
-
-    void MumlibPrivate::audioResizeTxBuffer(uint32_t buffersize)
-    {
-        _audio_buffer_tx.resize(buffersize);
-    }
-
 
     //
     // Channel
