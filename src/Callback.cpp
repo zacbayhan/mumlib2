@@ -39,11 +39,11 @@ void mumlib::BasicCallback::version(
 }
 
 void BasicCallback::audio(
-        int target,
-        int sessionId,
-        int sequenceNumber,
-        const int16_t* audio_buf,
-        size_t samples_count) {
+    int target,
+    int sessionId,
+    int sequenceNumber,
+    const int16_t* audio_buf,
+    size_t samples_count) {
     impl->logger.warn("audio: %d bytes of raw PCM data, target: %d, session: %d, seq: %d.",
         samples_count, target, sessionId, sequenceNumber);
 }

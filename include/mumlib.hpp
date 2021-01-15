@@ -25,8 +25,6 @@ namespace mumlib {
 
         explicit Mumlib(Callback &callback);
 
-        explicit Mumlib(Callback &callback, MumlibConfiguration &configuration);
-
         virtual ~Mumlib();
 
         void connect(string host, int port, string user, string password);
@@ -43,9 +41,9 @@ namespace mumlib {
 
         vector<MumbleChannel> getListAllChannel();
 
-        void sendAudioData(int16_t *pcmData, int pcmLength);
+        void sendAudioData(const int16_t *pcmData, int pcmLength);
 
-        void sendAudioDataTarget(int targetId, int16_t *pcmData, int pcmLength);
+        void sendAudioDataTarget(int targetId, const int16_t *pcmData, int pcmLength);
 
         void sendTextMessage(std::string message);
 

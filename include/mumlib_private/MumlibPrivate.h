@@ -94,7 +94,7 @@ namespace mumlib {
     private:
         //Audio
         std::unique_ptr<Audio> _audio;
-        uint32_t _audio_bitrate = mumble_opus_bitrate;
+        uint32_t _audio_bitrate = mumble_audio_bitrate;
         std::vector<int16_t> _audio_buffer_rx;
         std::vector<uint8_t> _audio_buffer_tx;
         std::chrono::time_point<std::chrono::system_clock> _audio_last_send;

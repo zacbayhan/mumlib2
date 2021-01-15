@@ -41,11 +41,11 @@ namespace mumlib {
         impl->TransportRun();
     }
 
-    void Mumlib::sendAudioData(int16_t *pcmData, int pcmLength) {
+    void Mumlib::sendAudioData(const int16_t *pcmData, int pcmLength) {
         impl->AudioSend(pcmData, pcmLength);
     }
 
-    void Mumlib::sendAudioDataTarget(int targetId, int16_t *pcmData, int pcmLength) {
+    void Mumlib::sendAudioDataTarget(int targetId, const int16_t *pcmData, int pcmLength) {
         impl->AudioSendTarget(pcmData, pcmLength, targetId);
     }
 

@@ -16,7 +16,7 @@ public:
     virtual void audio(int target,
                        int sessionId,
                        int sequenceNumber,
-                       int16_t *pcm_data,
+                       const int16_t *pcm_data,
                        uint32_t pcm_data_size) override {
         logger.notice("Received audio: pcm_data_size: %d", pcm_data_size);
         mum->sendAudioData(pcm_data, pcm_data_size);

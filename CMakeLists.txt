@@ -128,9 +128,9 @@ configure_package_config_file(
 #
 # Example
 #
-add_executable(mumlib_example)
-target_sources(mumlib_example PRIVATE "src_example/mumlib_example.cpp")
-target_link_libraries(mumlib_example PRIVATE mumlib)
+#add_executable(mumlib_example)
+#target_sources(mumlib_example PRIVATE "src_example/mumlib_example.cpp")
+#target_link_libraries(mumlib_example PRIVATE mumlib)
 
 #
 # Install
