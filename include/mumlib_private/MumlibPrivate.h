@@ -3,6 +3,7 @@
 //stdlib
 #include <chrono>
 #include <memory>
+#include <optional>
 
 //mumlib
 #include "mumlib/Constants.hpp"
@@ -43,6 +44,7 @@ namespace mumlib {
         void TransportSetKey(const std::string& key);
 
         //User
+        [[nodiscard]] std::optional<MumbleUser> UserGet(int32_t session_id) const;
         [[nodiscard]] std::vector<MumbleUser> UserGetList() const;
         [[nodiscard]] bool UserExists(uint32_t user_id) const;
         [[nodiscard]] int32_t UserFind(const std::string& user_name) const;

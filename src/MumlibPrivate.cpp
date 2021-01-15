@@ -524,6 +524,17 @@ namespace mumlib {
     // User
     //
 
+    std::optional<MumbleUser> MumlibPrivate::UserGet(int32_t session_id) const
+    {
+        for (const auto& user : _user_list) {
+            if (user.sessionId == session_id) {
+                return { user };
+            }
+        }
+
+        return {};
+    }
+
     std::vector<MumbleUser> MumlibPrivate::UserGetList() const
     {
         return _user_list;

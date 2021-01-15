@@ -13,6 +13,11 @@ namespace mumlib {
         delete impl;
     }
 
+    std::optional<MumbleUser> Mumlib::UserGet(int32_t session_id)
+    {
+        return impl->UserGet(session_id);
+    }
+
     ConnectionState Mumlib::getConnectionState() {
         return impl->TransportGetState();
     }

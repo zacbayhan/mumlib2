@@ -2,6 +2,7 @@
 
 //stdlib
 #include <cstdint>
+#include <optional>
 #include <stdexcept>
 #include <string>
 
@@ -27,6 +28,11 @@ namespace mumlib {
 
         virtual ~Mumlib();
 
+        //user
+        std::optional<MumbleUser> UserGet(int32_t session_id);
+
+
+        //
         void connect(string host, int port, string user, string password);
 
         void disconnect();
