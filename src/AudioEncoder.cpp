@@ -163,7 +163,7 @@ namespace mumlib {
             reset();
         }
 
-        _sequence_timestemp = std::chrono::high_resolution_clock::now();
+        _sequence_timestemp = std::chrono::steady_clock::now();
 
         return encoded;
     }

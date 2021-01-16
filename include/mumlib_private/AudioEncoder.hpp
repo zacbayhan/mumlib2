@@ -56,7 +56,7 @@ namespace mumlib {
         uint32_t _samplerate_input = 0;
         uint32_t _samplerate_output = 0;
 
-        std::chrono::time_point<std::chrono::high_resolution_clock> _sequence_timestemp;
+        std::chrono::time_point<std::chrono::steady_clock> _sequence_timestemp;
         uint32_t _sequence_number = 0;
 
     private:
