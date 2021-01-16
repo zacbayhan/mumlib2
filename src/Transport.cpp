@@ -109,13 +109,14 @@ void mumlib::Transport::disconnect()
 {
     logger.log("mumlib::Transport::disconnect()");
 
+    state = ConnectionState::DISCONNECTING;
+
     ioService.stop();
 
     if (state != ConnectionState::NOT_CONNECTED) {
         boost::system::error_code errorCode;
 
         // todo perform different operations for each ConnectionState
-
         sslSocket.lowest_layer().close(errorCode);
 
         udpSocket.shutdown(boost::asio::ip::udp::socket::shutdown_both, errorCode);
@@ -126,8 +127,6 @@ void mumlib::Transport::disconnect()
 
         state = ConnectionState::NOT_CONNECTED;
     }
-
-    std::this_thread::sleep_for(std::chrono::seconds(3));
 }
 
 void mumlib::Transport::sendVersion() {

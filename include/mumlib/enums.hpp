@@ -34,10 +34,11 @@ namespace mumlib {
     };
 
     enum class ConnectionState {
-        NOT_CONNECTED,
-        IN_PROGRESS,
-        CONNECTED,
-        FAILED
+        NOT_CONNECTED = 0, 
+        IN_PROGRESS = 1,
+        CONNECTED = 2,
+        DISCONNECTING = 3,
+        FAILED = 4
     };
 
 	enum class AudioPacketType : uint8_t {
