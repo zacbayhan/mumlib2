@@ -29,7 +29,10 @@ namespace mumlib {
         auto packet = _audio_encoder->Encode(pcmData, pcmLength, target);
 
         //send
-        transportSendAudio(packet.data(), packet.size());
+        try {
+            transportSendAudio(packet.data(), packet.size());
+        }
+        catch (const TransportException&) {}
     }
 
     bool MumlibPrivate::AudioSetInputSamplerate(uint32_t samplerate)
