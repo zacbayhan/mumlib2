@@ -21,7 +21,7 @@ namespace mumlib {
         _channels = MUMBLE_AUDIO_CHANNELS;
 
         createOpus();
-        createResampler();
+        SetOutputSamplerate(output_samplerate);
 
         Reset();
     }
@@ -59,6 +59,7 @@ namespace mumlib {
     bool AudioDecoder::SetOutputSamplerate(uint32_t samplerate)
     {
         _samplerate_output = samplerate;
+        _decoder_buf.resize(_samplerate_output * MUMBLE_AUDIO_CHANNELS * MUMBLE_OPUS_MAXLENGTH / 1000);
         createResampler();
         return true;
     }
@@ -91,14 +92,14 @@ namespace mumlib {
         }
     }
 
-    int AudioDecoder::Process(const std::vector<uint8_t>& input, int16_t* pcmBuffer, int pcmBufferSize) {
+    std::pair<int16_t*, size_t> AudioDecoder::Process(const std::vector<uint8_t>& input) {
         //decode
         int outputSize = opus_decode(
             _decoder,
             input.data(),
             input.size(),
-            pcmBuffer,
-            pcmBufferSize,
+            _decoder_buf.data(),
+            _decoder_buf.size(),
             0
         );
 
@@ -108,8 +109,8 @@ namespace mumlib {
 
         //resample
         if (_resampler) {
-            int resampled_samples = _resampler->Process(pcmBuffer, outputSize, _resampler_buf.data(), _resampler_buf.size());
-            memcpy(pcmBuffer, _resampler_buf.data(), resampled_samples*sizeof(int16_t));
+            int resampled_samples = _resampler->Process(_decoder_buf.data(), outputSize, _resampler_buf.data(), _resampler_buf.size());
+            memcpy(_decoder_buf.data(), _resampler_buf.data(), resampled_samples*sizeof(int16_t));
             outputSize = resampled_samples;
         }
 
@@ -117,6 +118,6 @@ namespace mumlib {
             throw AudioException("failed to resample");
         }
 
-        return outputSize;
+        return std::make_pair(_decoder_buf.data(), outputSize);
     }
 }

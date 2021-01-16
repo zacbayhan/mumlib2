@@ -1,5 +1,9 @@
 #pragma once
 
+//stdlib
+#include <cstdint>
+#include <utility>
+
 //opus
 #include <opus/opus.h>
 
@@ -25,7 +29,7 @@ namespace mumlib {
 
         bool SetOutputSamplerate(uint32_t samplerate);
 
-        int Process(const std::vector<uint8_t>& input, int16_t* pcmBuffer, int pcmBufferSize);
+        std::pair<int16_t*, size_t> Process(const std::vector<uint8_t>& input);
 
     private:
         //decoder
@@ -37,6 +41,7 @@ namespace mumlib {
         Logger logger = Logger("mumlib/AudioDecoder");
 
         OpusDecoder* _decoder = nullptr;
+        std::vector<int16_t> _decoder_buf;
 
         std::unique_ptr<AudioResampler> _resampler;
         std::vector<int16_t> _resampler_buf;

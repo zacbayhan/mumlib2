@@ -101,7 +101,6 @@ namespace mumlib {
         std::unique_ptr<AudioDecoder> _audio_decoder;
         std::unique_ptr<AudioEncoder> _audio_encoder;
         uint32_t _audio_bitrate = MUMBLE_OPUS_BITRATE;
-        std::vector<int16_t> _audio_buffer_rx;
 
         //Callback
         Callback& _callback;

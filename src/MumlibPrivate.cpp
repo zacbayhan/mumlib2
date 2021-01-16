@@ -50,14 +50,13 @@ namespace mumlib {
             return false;
         }
 
-        _audio_buffer_rx.resize(samplerate * MUMBLE_AUDIO_CHANNELS * MUMBLE_OPUS_MAXLENGTH / 1000);
+   
         return _audio_decoder->SetOutputSamplerate(samplerate);
     }
 
     void MumlibPrivate::audioDecoderCreate(uint32_t output_samplerate)
     {
         _audio_decoder = std::make_unique<AudioDecoder>(output_samplerate);
-        _audio_buffer_rx.resize(output_samplerate * MUMBLE_AUDIO_CHANNELS * MUMBLE_OPUS_MAXLENGTH / 1000);
     }
 
     void MumlibPrivate::audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate)
@@ -487,7 +486,7 @@ namespace mumlib {
 	bool MumlibPrivate::processAudioPacket(AudioPacket& packet)
 	{
         if (packet.GetHeaderType() == AudioPacketType::Opus) {
-            int len = _audio_decoder->Process(packet.GetAudioPayload(), _audio_buffer_rx.data(), _audio_buffer_rx.size());
+            auto  [buf, len] = _audio_decoder->Process(packet.GetAudioPayload());
             if (len < 0) {
                 _logger.warn("MumlibPrivate::processAudioPacket() -> failed to decode Opus");
                 return false;
@@ -497,7 +496,7 @@ namespace mumlib {
                 packet.GetHeaderTarget(),
                 packet.GetAudioSessionId(),
                 packet.GetAudioSequenceNumber(),
-                _audio_buffer_rx.data(),
+                buf,
                 len);
         }
         else if (packet.GetHeaderType() == AudioPacketType::Ping) {
