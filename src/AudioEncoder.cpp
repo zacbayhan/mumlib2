@@ -20,6 +20,7 @@ namespace mumlib {
         _samplerate_output = MUMBLE_AUDIO_SAMPLERATE;
         _channels = MUMBLE_AUDIO_CHANNELS;
 
+
         createOpus();
         createResampler();
 
@@ -46,7 +47,7 @@ namespace mumlib {
     void AudioEncoder::createResampler()
     {
         _resampler.reset();
-        if (_samplerate_input != MUMBLE_AUDIO_SAMPLERATE) {
+        if (_samplerate_input != _samplerate_output) {
             _resampler = std::make_unique<AudioResampler>(_channels, _samplerate_input, _samplerate_output, MUMBLE_RESAMPLER_QUALITY);
             _resampler_buf.resize(_samplerate_output * _channels * MUMBLE_OPUS_MAXLENGTH / 1000);
         }
@@ -90,12 +91,6 @@ namespace mumlib {
         _samplerate_input = samplerate;
         createResampler();
         return true;
-    }
-
-    void AudioEncoder::SetOutputSamplerate(uint32_t samplerate)
-    {
-        _samplerate_output= samplerate;
-        createResampler();
     }
 
     void AudioEncoder::SetBitrate(uint32_t bitrate)

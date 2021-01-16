@@ -5,6 +5,7 @@
 
 //mumlib
 #include "mumlib/Logger.hpp"
+#include "mumlib_private/AudioResampler.hpp"
 
 namespace mumlib {
     class AudioDecoder {
@@ -14,18 +15,34 @@ namespace mumlib {
         AudioDecoder& operator=(const AudioDecoder&) = delete;
         
         //ctor/dtor
-        explicit AudioDecoder();
+        explicit AudioDecoder(uint32_t output_samplerate);
         ~AudioDecoder();
 
-        int decoderProcess(const std::vector<uint8_t>& input, int16_t* pcmBuffer, int pcmBufferSize);
+        void Reset();
+
+        uint32_t GetInputSamplerate();
+        uint32_t GetOutputSamplerate();
+
+        bool SetOutputSamplerate(uint32_t samplerate);
+
+        int Process(const std::vector<uint8_t>& input, int16_t* pcmBuffer, int pcmBufferSize);
 
     private:
         //decoder
-        void decoderCreate(uint32_t sampleRate, uint32_t channels);
-        void decoderDestroy();
+        void createOpus();
+        void createResampler();
+        void destroyOpus();
+
     private:
         Logger logger = Logger("mumlib/AudioDecoder");
 
         OpusDecoder* _decoder = nullptr;
+
+        std::unique_ptr<AudioResampler> _resampler;
+        std::vector<int16_t> _resampler_buf;
+
+        uint32_t _channels = 0;
+        uint32_t _samplerate_input = 0;
+        uint32_t _samplerate_output = 0;
     };
 }

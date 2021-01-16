@@ -1,3 +1,5 @@
+#pragma once
+
 //stdlib 
 #include <cstdint>
 

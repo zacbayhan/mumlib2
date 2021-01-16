@@ -5,7 +5,7 @@
 namespace mumlib {
 	MumlibPrivate::MumlibPrivate(Callback& callback) : _callback(callback)
 	{
-		audioDecoderCreate();
+		audioDecoderCreate(MUMBLE_AUDIO_SAMPLERATE);
         audioEncoderCreate(MUMBLE_AUDIO_SAMPLERATE, MUMBLE_OPUS_BITRATE);
 	}
 
@@ -74,9 +74,18 @@ namespace mumlib {
         return _audio_encoder->SetInputSamplerate(samplerate);
     }
 
-    void MumlibPrivate::audioDecoderCreate()
+    bool MumlibPrivate::AudioSetOutputSamplerate(uint32_t samplerate)
     {
-        _audio_decoder = std::make_unique<AudioDecoder>();
+        if (!_audio_decoder) {
+            return false;
+        }
+
+        return _audio_decoder->SetOutputSamplerate(samplerate);
+    }
+
+    void MumlibPrivate::audioDecoderCreate(uint32_t output_samplerate)
+    {
+        _audio_decoder = std::make_unique<AudioDecoder>(output_samplerate);
     }
 
     void MumlibPrivate::audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate)
@@ -506,7 +515,7 @@ namespace mumlib {
 	bool MumlibPrivate::processAudioPacket(AudioPacket& packet)
 	{
         if (packet.GetHeaderType() == AudioPacketType::Opus) {
-            int len = _audio_decoder->decoderProcess(packet.GetAudioPayload(), _audio_buffer_rx.data(), _audio_buffer_rx.size());
+            int len = _audio_decoder->Process(packet.GetAudioPayload(), _audio_buffer_rx.data(), _audio_buffer_rx.size());
             if (len < 0) {
                 _logger.warn("MumlibPrivate::processAudioPacket() -> failed to decode Opus");
                 return false;

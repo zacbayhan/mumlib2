@@ -26,7 +26,6 @@ namespace mumlib {
         uint32_t GetOutputSamplerate();
 
         bool SetInputSamplerate(uint32_t samplerate);
-        void SetOutputSamplerate(uint32_t samplerate);
 
         void SetBitrate(uint32_t bitrate);
 

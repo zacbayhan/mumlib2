@@ -26,7 +26,8 @@ namespace mumlib {
         //Audio
         void AudioSend(const int16_t* pcmData, int pcmLength);
         void AudioSendTarget(const int16_t* pcmData, int pcmLength, uint32_t target);
-        bool AudioSetInputSamplerate(uint32_t _samplerate);
+        bool AudioSetInputSamplerate(uint32_t samplerate);
+        bool AudioSetOutputSamplerate(uint32_t samplerate);
 
         // Channel
         [[nodiscard]] uint32_t ChannelGetCurrent() const;
@@ -60,7 +61,7 @@ namespace mumlib {
 
     private:
         // Audio
-        void audioDecoderCreate();
+        void audioDecoderCreate(uint32_t output_samplerate);
         void audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate);
 
         // Channel

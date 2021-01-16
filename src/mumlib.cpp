@@ -18,6 +18,11 @@ namespace mumlib {
         return impl->AudioSetInputSamplerate(samplerate);
     }
 
+    bool Mumlib::AudioSetOutputSamplerate(uint32_t samplerate)
+    {
+        return impl->AudioSetOutputSamplerate(samplerate);
+    }
+
     std::optional<MumbleUser> Mumlib::UserGet(int32_t session_id)
     {
         return impl->UserGet(session_id);
