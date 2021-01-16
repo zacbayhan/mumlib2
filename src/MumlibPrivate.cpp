@@ -80,12 +80,14 @@ namespace mumlib {
             return false;
         }
 
+        _audio_buffer_rx.resize(samplerate * MUMBLE_AUDIO_CHANNELS * MUMBLE_OPUS_MAXLENGTH / 1000);
         return _audio_decoder->SetOutputSamplerate(samplerate);
     }
 
     void MumlibPrivate::audioDecoderCreate(uint32_t output_samplerate)
     {
         _audio_decoder = std::make_unique<AudioDecoder>(output_samplerate);
+        _audio_buffer_rx.resize(output_samplerate * MUMBLE_AUDIO_CHANNELS * MUMBLE_OPUS_MAXLENGTH / 1000);
     }
 
     void MumlibPrivate::audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate)
