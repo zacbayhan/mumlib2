@@ -54,7 +54,8 @@ protobuf_generate_cpp(MUMLIB_SOURCES_PROTO MUMLIB_HEADERS_PROTO "src/Mumble.prot
 # Library/Sources
 set(MUMLIB_SOURCES
     src/mumlib.cpp
-    src/Audio.cpp
+    src/AudioDecoder.cpp
+    src/AudioEncoder.cpp
     src/AudioPacket.cpp
     src/CryptState.cpp
     src/Logger.cpp
@@ -71,7 +72,8 @@ set(MUMLIB_HEADERS
     include/mumlib/Logger.hpp
     include/mumlib/Structs.hpp
 
-    include/mumlib_private/Audio.hpp
+    include/mumlib_private/AudioDecoder.hpp
+    include/mumlib_private/AudioEncoder.hpp
     include/mumlib_private/AudioPacket.hpp
     include/mumlib_private/CryptState.hpp
     include/mumlib_private/MumlibPrivate.h

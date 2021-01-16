@@ -1,10 +1,12 @@
 //mumlib
+#include "mumlib/Exceptions.hpp"
 #include "mumlib_private/MumlibPrivate.h"
 
 namespace mumlib {
 	MumlibPrivate::MumlibPrivate(Callback& callback) : _callback(callback)
 	{
-		audioCreate(_audio_bitrate);
+		audioDecoderCreate();
+        audioEncoderCreate(_audio_bitrate);
 	}
 
 	//
@@ -19,21 +21,21 @@ namespace mumlib {
     void MumlibPrivate::AudioSendTarget(const int16_t* pcmData, int pcmLength, uint32_t target)
     {
         //check encoder availability
-        if (!_audio) {
+        if (!_audio_encoder) {
             return;
         }
 
         //check interval and reset encoder
         auto interval = std::chrono::system_clock::now() - _audio_last_send;
         if (interval > _audio_reset_timeout) {
-            _audio->EncoderReset();
+            _audio_encoder->EncoderReset();
             _audio_seq_number = 0;
         }
 
         //encode
         int len = 0;
         if (pcmData && pcmLength) {
-            len = _audio->EncoderProcess(
+            len = _audio_encoder->EncoderProcess(
                 pcmData,
                 pcmLength,
                 _audio_buffer_tx.data(),
@@ -55,7 +57,7 @@ namespace mumlib {
         }
         else {
             _audio_seq_number = 0;
-            _audio->EncoderReset();
+            _audio_encoder->EncoderReset();
         }
         _audio_last_send = std::chrono::system_clock::now();
 
@@ -63,10 +65,15 @@ namespace mumlib {
         transportSendAudio(encoded.data(), encoded.size());
     }
 
-	void MumlibPrivate::audioCreate(uint32_t bitrate)
-	{
-		_audio = std::make_unique<Audio>(bitrate);
-	}
+    void MumlibPrivate::audioDecoderCreate()
+    {
+        _audio_decoder = std::make_unique<AudioDecoder>();
+    }
+
+    void MumlibPrivate::audioEncoderCreate(uint32_t bitrate)
+    {
+        _audio_encoder = std::make_unique<AudioEncoder>(bitrate);
+    }
 
     //
     // Channel
@@ -490,7 +497,7 @@ namespace mumlib {
 	bool MumlibPrivate::processAudioPacket(AudioPacket& packet)
 	{
         if (packet.GetHeaderType() == AudioPacketType::Opus) {
-            int len = _audio->decoderProcess(packet.GetAudioPayload(), _audio_buffer_rx.data(), _audio_buffer_rx.size());
+            int len = _audio_decoder->decoderProcess(packet.GetAudioPayload(), _audio_buffer_rx.data(), _audio_buffer_rx.size());
             if (len < 0) {
                 _logger.warn("MumlibPrivate::processAudioPacket() -> failed to decode Opus");
                 return false;
@@ -797,4 +804,5 @@ namespace mumlib {
 
         return VoicetargetSet(targetId, type, id);
     }
+
 }

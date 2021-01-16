@@ -6,9 +6,11 @@
 #include <optional>
 
 //mumlib
-#include "mumlib/Constants.hpp"
 #include "mumlib/Callback.hpp"
-#include "mumlib_private/Audio.hpp"
+#include "mumlib/Constants.hpp"
+#include "mumlib/Structs.hpp"
+#include "mumlib_private/AudioDecoder.hpp"
+#include "mumlib_private/AudioEncoder.hpp"
 #include "mumlib_private/Transport.hpp"
 #include "Mumble.pb.h"
 
@@ -57,7 +59,8 @@ namespace mumlib {
 
     private:
         // Audio
-        void audioCreate(uint32_t bitrate);
+        void audioDecoderCreate();
+        void audioEncoderCreate(uint32_t bitrate);
 
         // Channel
         void channelEmplace(MumbleChannel& channel);
@@ -93,7 +96,8 @@ namespace mumlib {
 
     private:
         //Audio
-        std::unique_ptr<Audio> _audio;
+        std::unique_ptr<AudioDecoder> _audio_decoder;
+        std::unique_ptr<AudioEncoder> _audio_encoder;
         uint32_t _audio_bitrate = mumble_audio_bitrate;
         std::array<int16_t, mumble_audio_samplerate*mumble_audio_maxframelength/1000> _audio_buffer_rx;
         std::array<uint8_t, mumble_audio_samplerate*mumble_audio_maxframelength/1000> _audio_buffer_tx;

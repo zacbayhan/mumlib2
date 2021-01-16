@@ -5,11 +5,9 @@
 #include <boost/format.hpp>
 
 //mumlib
+#include "mumlib/Constants.hpp"
 #include "mumlib/Exceptions.hpp"
-#include "mumlib_private/Audio.hpp"
-#include "mumlib_private/Transport.hpp"
-
-static boost::posix_time::seconds RESET_SEQUENCE_NUMBER_INTERVAL(5);
+#include "mumlib_private/AudioEncoder.hpp"
 
 namespace mumlib {
 
@@ -17,24 +15,17 @@ namespace mumlib {
     // Ctor/Dtor
     //
 
-    Audio::Audio(uint32_t bitrate) {
+    AudioEncoder::AudioEncoder(uint32_t bitrate) {
         encoderCreate(mumble_audio_samplerate, mumble_audio_channels);
         encoderSetBitrate(bitrate);
         EncoderReset();
-
-        decoderCreate(mumble_audio_samplerate, mumble_audio_channels);
     }
 
-    Audio::~Audio() {
+    AudioEncoder::~AudioEncoder() {
         encoderDestroy();
-        decoderDestroy();
     }
 
-    //
-    // Encoder
-    //
-
-    void Audio::encoderCreate(uint32_t samplerate, uint32_t channels)
+    void AudioEncoder::encoderCreate(uint32_t samplerate, uint32_t channels)
     {
         encoderDestroy();
 
@@ -45,7 +36,7 @@ namespace mumlib {
         }
     }
 
-    void Audio::encoderDestroy()
+    void AudioEncoder::encoderDestroy()
     {
         if (_encoder) {
             opus_encoder_destroy(_encoder);
@@ -53,7 +44,7 @@ namespace mumlib {
         }
     }
 
-    void mumlib::Audio::EncoderReset() {
+    void AudioEncoder::EncoderReset() {
         if (!_encoder) {
             throw AudioException("failed to reset encoder");
         }
@@ -64,7 +55,7 @@ namespace mumlib {
         }
     }
 
-    void Audio::encoderSetBitrate(uint32_t bitrate)
+    void AudioEncoder::encoderSetBitrate(uint32_t bitrate)
     {
         if (!_encoder) {
             throw AudioException("failed to reset encoder");
@@ -82,7 +73,7 @@ namespace mumlib {
         }
     }
 
-    int Audio::EncoderProcess(const int16_t* pcmData, size_t pcmLength, uint8_t* encodedBuffer, size_t outputBufferSize) {
+    int AudioEncoder::EncoderProcess(const int16_t* pcmData, size_t pcmLength, uint8_t* encodedBuffer, size_t outputBufferSize) {
         int outputSize = opus_encode(
             _encoder,
             pcmData,
@@ -98,46 +89,7 @@ namespace mumlib {
         return outputSize;
     }
 
-    int Audio::EncoderProcess(const std::vector<int16_t>& input, uint8_t* encodedBuffer, size_t outputBufferSize) {
+    int AudioEncoder::EncoderProcess(const std::vector<int16_t>& input, uint8_t* encodedBuffer, size_t outputBufferSize) {
         return EncoderProcess(input.data(), input.size(), encodedBuffer, outputBufferSize);
-    }
-
-    //
-    // decoder
-    //
-    void Audio::decoderCreate(uint32_t samplerate, uint32_t channels)
-    {
-        decoderDestroy();
-
-        int error = 0;
-        _decoder = opus_decoder_create(samplerate, channels, &error);
-        if (error != OPUS_OK) {
-            throw AudioException((boost::format("failed to initialize OPUS decoder: %s") % opus_strerror(error)).str());
-        }
-    }
-
-    void Audio::decoderDestroy()
-    {
-        if (_decoder) {
-            opus_decoder_destroy(_decoder);
-            _decoder = nullptr;
-        }
-    }
-
-    int mumlib::Audio::decoderProcess(const std::vector<uint8_t>& input, int16_t* pcmBuffer, int pcmBufferSize) {
-        int outputSize = opus_decode(
-            _decoder,
-            input.data(),
-            input.size(),
-            pcmBuffer,
-            pcmBufferSize,
-            0
-        );
-
-        if (outputSize <= 0) {
-            throw AudioException((boost::format("failed to decode %d B of OPUS data: %s") % input.size() % opus_strerror(outputSize)).str());
-        }
-
-        return outputSize;
     }
 }
