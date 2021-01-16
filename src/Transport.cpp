@@ -460,13 +460,15 @@ void mumlib::Transport::sendSsl(uint8_t *buff, int length) {
     }
 
     if (length > MUMBLE_TCP_MAXLENGTH) {
-        logger.warn("Sending %d B of data via SSL. Maximal allowed data length to receive is %d B.", length,
-            MUMBLE_TCP_MAXLENGTH);
+        logger.warn("Sending %d B of data via SSL. Maximal allowed data length to receive is %d B.", length, MUMBLE_TCP_MAXLENGTH);
     }
+
     try {
         write(sslSocket, boost::asio::buffer(buff, static_cast<size_t>(length)));
     } catch (boost::system::system_error &err) {
-        throwTransportException(std::string("SSL send failed: ") + err.what());
+        logger.log("mumlib::Transport::sendSsl() -> failed to send packet with error #", err.code());
+        disconnect();
+        state = ConnectionState::FAILED;
     }
 }
 
@@ -483,17 +485,15 @@ void mumlib::Transport::sendSslAsync(uint8_t *buff, int length) {
     //logger.warn("Sending %d B of data asynchronously.", length);
 
     async_write(
-            sslSocket,
-            boost::asio::buffer(asyncBuff, static_cast<size_t>(length)),
-            [this, asyncBuff](const boost::system::error_code &ec, size_t bytesTransferred) {
-                asyncBufferPool.free(asyncBuff);
-                //logger.warn("Sent %d B.", bytesTransferred);
-                if (!ec && bytesTransferred > 0) {
-
-                } else {
-                    throwTransportException("async SSL send failed: " + ec.message());
-                }
-            });
+        sslSocket,
+        boost::asio::buffer(asyncBuff, static_cast<size_t>(length)),
+        [this, asyncBuff](const boost::system::error_code &ec, size_t bytesTransferred) {
+            asyncBufferPool.free(asyncBuff);
+            if (ec || !bytesTransferred) {
+                throwTransportException("async SSL send failed: " + ec.message());
+            }
+        }
+    );
 }
 
 void mumlib::Transport::sendControlMessage(MessageType type, google::protobuf::Message &message) {
@@ -531,9 +531,6 @@ void mumlib::Transport::throwTransportException(string message) {
     throw TransportException(std::move(message));
 }
 
-
-
-
 void mumlib::Transport::sendEncodedAudioPacket(const uint8_t *buffer, int length) {
     if (state != ConnectionState::CONNECTED) {
         logger.warn("sendEncodedAudioPacket: Connection not established.");
@@ -541,13 +538,9 @@ void mumlib::Transport::sendEncodedAudioPacket(const uint8_t *buffer, int length
     }
 
     if (udpActive) {
-        //logger.warn("Sending %d B of audio data via UDP.", length);
         sendUdpAsync(buffer, length);
     } else {
-        //logger.warn("Sending %d B of audio data via TCP.", length);
-
         const uint16_t netUdptunnelType = htons(static_cast<uint16_t>(MessageType::UDPTUNNEL));
-
         const uint32_t netLength = htonl(static_cast<uint32_t>(length));
 
         const int packet = sizeof(netUdptunnelType) + sizeof(netLength) + length;
