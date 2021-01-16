@@ -11,6 +11,8 @@ include(CMakePackageConfigHelpers)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 #
 # CMake/Standalone Project Check
 #
@@ -39,6 +41,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(Protobuf REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Opus CONFIG REQUIRED)
+find_package(SpeexDSP REQUIRED)
 
 #
 # Library
@@ -111,6 +114,7 @@ target_link_libraries(mumlib PRIVATE Boost::boost Boost::system)
 target_link_libraries(mumlib PRIVATE OpenSSL::SSL)
 target_link_libraries(mumlib PRIVATE Opus::opus)
 target_link_libraries(mumlib PRIVATE protobuf::libprotobuf)
+target_link_libraries(mumlib PRIVATE SpeexDSP::SpeexDSP)
 if(WIN32)
     target_link_libraries(mumlib PUBLIC Crypt32)
 endif()
