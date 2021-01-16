@@ -102,10 +102,6 @@ namespace mumlib {
         std::unique_ptr<AudioEncoder> _audio_encoder;
         uint32_t _audio_bitrate = MUMBLE_OPUS_BITRATE;
         std::vector<int16_t> _audio_buffer_rx;
-        std::array<uint8_t, MUMBLE_AUDIO_SAMPLERATE*MUMBLE_AUDIO_CHANNELS*MUMBLE_OPUS_MAXLENGTH/1000> _audio_buffer_tx;
-        std::chrono::time_point<std::chrono::system_clock> _audio_last_send;
-        std::chrono::seconds _audio_reset_timeout = 5s;
-        uint32_t _audio_seq_number = 0;
 
         //Callback
         Callback& _callback;

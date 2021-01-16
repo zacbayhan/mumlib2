@@ -25,44 +25,11 @@ namespace mumlib {
             return;
         }
 
-        //check interval and reset encoder
-        auto interval = std::chrono::system_clock::now() - _audio_last_send;
-        if (interval > _audio_reset_timeout) {
-            _audio_encoder->Reset();
-            _audio_seq_number = 0;
-        }
-
         //encode
-        int len = 0;
-        if (pcmData && pcmLength) {
-            len = _audio_encoder->Process(
-                pcmData,
-                pcmLength,
-                _audio_buffer_tx.data(),
-                _audio_buffer_tx.size()
-            );
-        }
-
-        //create audipacket
-        auto encoded = AudioPacket::CreateAudioOpusPacket(
-            target,
-            _audio_seq_number,
-            _audio_buffer_tx.data(),
-            len,
-            len==0).Encode();
-
-        //update timestamp and sequence
-        if (len > 0) {
-            _audio_seq_number += 100 * pcmLength / MUMBLE_AUDIO_SAMPLERATE;
-        }
-        else {
-            _audio_seq_number = 0;
-            _audio_encoder->Reset();
-        }
-        _audio_last_send = std::chrono::system_clock::now();
+        auto packet = _audio_encoder->Encode(pcmData, pcmLength, target);
 
         //send
-        transportSendAudio(encoded.data(), encoded.size());
+        transportSendAudio(packet.data(), packet.size());
     }
 
     bool MumlibPrivate::AudioSetInputSamplerate(uint32_t samplerate)

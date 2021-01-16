@@ -26,7 +26,7 @@ namespace mumlib {
 
         SetBitrate(output_bitrate);
 
-        Reset();
+        reset();
     }
 
     AudioEncoder::~AudioEncoder() {
@@ -61,7 +61,7 @@ namespace mumlib {
         }
     }
 
-    void AudioEncoder::Reset() {
+    void AudioEncoder::reset() {
         if (!_encoder) {
             throw AudioException("failed to reset encoder");
         }
@@ -74,6 +74,8 @@ namespace mumlib {
         if (_resampler) {
             _resampler->Reset();
         }
+
+        _sequence_number = 0;
     }
 
     uint32_t AudioEncoder::GetInputSamplerate()
@@ -95,6 +97,8 @@ namespace mumlib {
 
     void AudioEncoder::SetBitrate(uint32_t bitrate)
     {
+        _encoder_buf.resize(bitrate * MUMBLE_OPUS_MAXLENGTH / 1000);
+
         if (!_encoder) {
             throw AudioException("failed to reset encoder");
         }
@@ -111,28 +115,56 @@ namespace mumlib {
         }
     }
 
-    int AudioEncoder::Process(const int16_t* pcmData, size_t pcmLength, uint8_t* encodedBuffer, size_t outputBufferSize) {
-
+    std::vector<uint8_t> AudioEncoder::Encode(const int16_t* pcmData, size_t pcmLength, uint32_t target) {
         const int16_t* in_data = pcmData;
-        size_t in_len = pcmLength;
+        int in_len = pcmLength;
 
-        if (_resampler) {
-            in_len = _resampler->Process(pcmData, pcmLength, _resampler_buf.data(), _resampler_buf.size());
-            in_data = _resampler_buf.data();
+        int out_len = 0;
+
+        //check interval and reset encoder
+        auto interval = std::chrono::high_resolution_clock::now() - _sequence_timestemp;
+        if (interval > _sequence_reset_interval) {
+            reset();
+        }
+        
+        //resample and encode
+        if (pcmData && pcmLength) {
+            if (_resampler) {
+                in_len = _resampler->Process(pcmData, pcmLength, _resampler_buf.data(), _resampler_buf.size());
+                in_data = _resampler_buf.data();
+            }
+
+            out_len = opus_encode(
+                _encoder,
+                in_data,
+                in_len,
+                _encoder_buf.data(),
+                _encoder_buf.size()
+            );
+
+            if (out_len <= 0) {
+                throw AudioException((boost::format("failed to encode %d B of PCM data: %s") % in_len % opus_strerror(out_len)).str());
+            }
         }
 
-        int outputSize = opus_encode(
-            _encoder,
-            in_data,
-            in_len,
-            encodedBuffer,
-            outputBufferSize
-        );
+        //create audiopacket
+        auto encoded = AudioPacket::CreateAudioOpusPacket(
+            target,
+            _sequence_number,
+            _encoder_buf.data(),
+            out_len,
+            out_len == 0).Encode();
 
-        if (outputSize <= 0) {
-            throw AudioException((boost::format("failed to encode %d B of PCM data: %s") % pcmLength % opus_strerror(outputSize)).str());
+        //update timestamp and sequence
+        if (out_len > 0) {
+            _sequence_number += 100 * in_len / MUMBLE_AUDIO_SAMPLERATE;
+        }
+        else {
+            reset();
         }
 
-        return outputSize;
+        _sequence_timestemp = std::chrono::high_resolution_clock::now();
+
+        return encoded;
     }
 }
