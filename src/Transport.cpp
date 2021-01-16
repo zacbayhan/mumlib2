@@ -33,15 +33,13 @@ static map<MumbleProto::Reject_RejectType, string> rejectMessages = {
 };
 
 mumlib::Transport::Transport(
-        mumlib::ProcessControlMessageFunction processMessageFunc,
-        ProcessEncodedAudioPacketFunction processEncodedAudioPacketFunction,
+    std::function<bool(MessageType, uint8_t*, int)> processMessageFunc,
+    std::function<bool(AudioPacket&)> processEncodedAudioPacketFunction,
         std::string cert_file,
         std::string privkey_file) :
         logger("mumlib.Transport"),
         processMessageFunction(std::move(processMessageFunc)),
         processEncodedAudioPacketFunction(std::move(processEncodedAudioPacketFunction)),
-        state(ConnectionState::NOT_CONNECTED),
-        ping_state(PingState::NONE),
         udpSocket(ioService),
         sslContext(ssl::context::sslv23),
         sslContextHelper(sslContext, cert_file, privkey_file),
@@ -59,13 +57,9 @@ mumlib::Transport::~Transport() {
     delete[] sslIncomingBuffer;
 }
 
-void mumlib::Transport::connect(
-        std::string host,
-        int port,
-        std::string user,
-        std::string password) {
+void mumlib::Transport::connect(const std::string& host, int port, const std::string& user, const std::string& password) {
 
-    logger.info("mumlib::Transport::connect()");
+    logger.log("mumlib::Transport::connect()");
 
     boost::system::error_code errorCode;
 
@@ -74,19 +68,17 @@ void mumlib::Transport::connect(
     udpActive = false;
     state = ConnectionState::IN_PROGRESS;
 
-    logger.warn("Verify_mode");
+    logger.log("mumlib::Transport::connect() -> verify mode");
     sslSocket.set_verify_mode(boost::asio::ssl::verify_peer);
 
-    logger.warn("set_verify_callback");
     //todo for now it accepts every certificate, move it to callback
-    sslSocket.set_verify_callback([](bool preverified, boost::asio::ssl::verify_context &ctx) {
-        return true;
-    });
+    logger.log("mumlib::Transport::connect() -> verify verify callback");
+    sslSocket.set_verify_callback([](bool preverified, boost::asio::ssl::verify_context &ctx) { return true; });
 
-    logger.warn("Trying connection...");
+    logger.log("mumlib::Transport::connect() -> trying to connect");
 
     try {
-        logger.info("mumlib::Transport::connect() -> udp");
+        logger.log("mumlib::Transport::connect() -> udp");
         ip::udp::resolver resolverUdp(ioService);
         ip::udp::resolver::query queryUdp(ip::udp::v4(), host, to_string(port));
         udpReceiverEndpoint = *resolverUdp.resolve(queryUdp);
@@ -97,24 +89,25 @@ void mumlib::Transport::connect(
 
         doReceiveUdp();
 
-        logger.info("mumlib::Transport::connect() -> tcp");
+        logger.log("mumlib::Transport::connect() -> tcp");
         ip::tcp::resolver resolverTcp(ioService);
         ip::tcp::resolver::query queryTcp(host, to_string(port));
 
-        logger.info("mumlib::Transport::connect() -> async_connect");
+        logger.log("mumlib::Transport::connect() -> async_connect");
         async_connect(
             sslSocket.lowest_layer(),
             resolverTcp.resolve(queryTcp),
             bind(&Transport::sslConnectHandler, this, boost::asio::placeholders::error));
 
     } catch (runtime_error &exp) {
+        logger.log("mumlib::Transport::connect() -> failed to establish connection", exp.what());
         throwTransportException(string("failed to establish connection: ") + exp.what());
     }
 }
 
 void mumlib::Transport::disconnect()
 {
-    logger.info("mumlib::Transport::disconnect()");
+    logger.log("mumlib::Transport::disconnect()");
 
     ioService.stop();
 
@@ -132,14 +125,14 @@ void mumlib::Transport::disconnect()
         }
 
         state = ConnectionState::NOT_CONNECTED;
-        printf("Not Connected\n");
     }
 
-    printf("Disconnected\n");
     std::this_thread::sleep_for(std::chrono::seconds(3));
 }
 
 void mumlib::Transport::sendVersion() {
+    logger.log("mumlib::Transport::sendVersion()");
+
     MumbleProto::Version version;
 
     version.set_version(CLIENT_VERSION);
@@ -147,12 +140,12 @@ void mumlib::Transport::sendVersion() {
     version.set_release(CLIENT_RELEASE);
     version.set_os_version(CLIENT_OS_VERSION);
 
-    logger.warn("Sending version information.");
-
     sendControlMessagePrivate(MessageType::VERSION, version);
 }
 
 void mumlib::Transport::sendAuthentication() {
+    logger.log("mumlib::Transport::sendAuthentication()");
+
     string user, password;
     tie(user, password) = credentials;
 
@@ -163,12 +156,11 @@ void mumlib::Transport::sendAuthentication() {
     authenticate.clear_tokens();
     authenticate.set_opus(true);
 
-    logger.warn("Sending authententication.");
-
     sendControlMessagePrivate(MessageType::AUTHENTICATE, authenticate);
 }
 
 void mumlib::Transport::sendSslPing() {
+    logger.log("mumlib::Transport::sendSslPing()");
 
     if (ping_state == PingState::PING) {
         logger.warn("Continue sending SSL ping.");
@@ -177,12 +169,9 @@ void mumlib::Transport::sendSslPing() {
     }
 
     ping_state = PingState::PING;
-
     MumbleProto::Ping ping;
 
     ping.set_timestamp(std::time(nullptr));
-
-    //logger.warn("Sending SSL ping.");
 
     sendControlMessagePrivate(MessageType::PING, ping);
 }
@@ -543,14 +532,7 @@ void mumlib::Transport::throwTransportException(string message) {
     throw TransportException(std::move(message));
 }
 
-mumlib::SslContextHelper::SslContextHelper(ssl::context &ctx, std::string cert_file, std::string privkey_file) {
-    if ( cert_file.size() > 0 ) {
-        ctx.use_certificate_file(cert_file, ssl::context::file_format::pem);
-    }
-    if ( privkey_file.size() > 0 ) {
-        ctx.use_private_key_file(privkey_file, ssl::context::file_format::pem);
-    }
-}
+
 
 
 void mumlib::Transport::sendEncodedAudioPacket(const uint8_t *buffer, int length) {

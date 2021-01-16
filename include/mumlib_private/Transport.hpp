@@ -2,6 +2,7 @@
 
 //stdlib
 #include <chrono>
+#include <functional>
 #include <utility>
 
 //boost
@@ -25,28 +26,20 @@
 
 
 namespace mumlib {
-    using namespace std;
     using namespace boost::asio;
     using namespace boost::asio::ip;
-
-    typedef function<bool(MessageType, uint8_t *, int)> ProcessControlMessageFunction;
-    typedef function<bool(AudioPacket&)> ProcessEncodedAudioPacketFunction;
-
 
     class Transport : boost::noncopyable {
     public:
         Transport(
-                  ProcessControlMessageFunction processControlMessageFunc,
-                  ProcessEncodedAudioPacketFunction processEncodedAudioPacketFunction,
+                  std::function<bool(MessageType, uint8_t*, int)> processControlMessageFunc,
+                  std::function<bool(AudioPacket&)>                processEncodedAudioPacketFunction,
                   std::string cert_file = "",
                   std::string privkey_file = "");
 
         ~Transport();
 
-        void connect(string host,
-                     int port,
-                     string user,
-                     string password);
+        void connect(const std::string& host, int port, const std::string& user, const std::string& password);
 
         void disconnect();
 
@@ -69,18 +62,18 @@ namespace mumlib {
 
         boost::asio::io_service ioService;
 
-        pair<string, int> connectionParams;
+        std::pair<std::string, int> connectionParams;
 
-        pair<string, string> credentials;
+        std::pair<std::string, std::string> credentials;
 
-        ProcessControlMessageFunction processMessageFunction;
+        std::function<bool(MessageType, uint8_t*, int)> processMessageFunction;
 
-        ProcessEncodedAudioPacketFunction processEncodedAudioPacketFunction;
+        std::function<bool(AudioPacket&)> processEncodedAudioPacketFunction;
 
         volatile bool udpActive;
 
-        ConnectionState state;
-        PingState ping_state;
+        ConnectionState state = ConnectionState::NOT_CONNECTED;
+        PingState ping_state = PingState::NONE;
 
         udp::socket udpSocket;
         ip::udp::endpoint udpReceiverEndpoint;
@@ -125,7 +118,7 @@ namespace mumlib {
 
         void sendUdpPing();
 
-        void throwTransportException(string message);
+        void throwTransportException(std::string message);
     };
 
 
