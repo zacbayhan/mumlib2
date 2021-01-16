@@ -16,7 +16,7 @@ namespace mumlib {
     //
 
     AudioDecoder::AudioDecoder() {
-        decoderCreate(mumble_audio_samplerate, mumble_audio_channels);
+        decoderCreate(MUMBLE_AUDIO_SAMPLERATE, MUMBLE_AUDIO_CHANNELS);
     }
 
     AudioDecoder::~AudioDecoder() {

@@ -47,9 +47,9 @@ mumlib::Transport::Transport(
         sslContextHelper(sslContext, cert_file, privkey_file),
         sslSocket(ioService, sslContext),
         pingTimer(ioService, PING_INTERVAL),
-        asyncBufferPool(static_cast<const unsigned long>(max(MAX_UDP_LENGTH, MAX_TCP_LENGTH))) {
+        asyncBufferPool(static_cast<const unsigned long>(max(MUMBLE_UDP_MAXLENGTH, MUMBLE_TCP_MAXLENGTH))) {
 
-    sslIncomingBuffer = new uint8_t[MAX_TCP_LENGTH];
+    sslIncomingBuffer = new uint8_t[MUMBLE_TCP_MAXLENGTH];
 
     pingTimer.async_wait(boost::bind(&Transport::pingTimerTick, this, _1));
 }
@@ -195,7 +195,7 @@ bool mumlib::Transport::isUdpActive() {
 void mumlib::Transport::doReceiveUdp()
 {
     udpSocket.async_receive_from(
-            buffer(udpIncomingBuffer, MAX_UDP_LENGTH),
+            buffer(udpIncomingBuffer, MUMBLE_UDP_MAXLENGTH),
             udpReceiverEndpoint,
             [this](const boost::system::error_code &ec, size_t bytesTransferred) {
                 if (!ec && bytesTransferred > 0) {
@@ -293,8 +293,8 @@ void mumlib::Transport::pingTimerTick(const boost::system::error_code &e) {
 }
 
 void mumlib::Transport::sendUdpAsync(const uint8_t *buff, int length) {
-    if (length > MAX_UDP_LENGTH - 4) {
-        throwTransportException("maximum allowed: data length is %d" + to_string(MAX_UDP_LENGTH - 4));
+    if (length > MUMBLE_UDP_MAXLENGTH - 4) {
+        throwTransportException("maximum allowed: data length is %d" + to_string(MUMBLE_UDP_MAXLENGTH - 4));
     }
 
     auto *encryptedMsgBuff = asyncBufferPool.malloc();
@@ -320,7 +320,7 @@ void mumlib::Transport::sendUdpAsync(const uint8_t *buff, int length) {
 void mumlib::Transport::doReceiveSsl() {
     async_read(
             sslSocket,
-            boost::asio::buffer(sslIncomingBuffer, MAX_TCP_LENGTH),
+            boost::asio::buffer(sslIncomingBuffer, MUMBLE_TCP_MAXLENGTH),
             [this](const boost::system::error_code &error, size_t bytesTransferred) -> size_t {
                 if (bytesTransferred < 6) {
                     // we need the message header to determine the payload length
@@ -332,10 +332,10 @@ void mumlib::Transport::doReceiveSsl() {
                 size_t remaining = wholeMessageLength - bytesTransferred;
                 remaining = max(remaining, (size_t) 0);
 
-                if (wholeMessageLength > MAX_TCP_LENGTH) {
+                if (wholeMessageLength > MUMBLE_TCP_MAXLENGTH) {
                     throwTransportException(
                             (boost::format("message bigger (%d B) than max allowed size (%d B)")
-                             % wholeMessageLength % MAX_TCP_LENGTH).str());
+                             % wholeMessageLength % MUMBLE_TCP_MAXLENGTH).str());
                 }
 
                 return remaining;
@@ -471,9 +471,9 @@ void mumlib::Transport::sendSsl(uint8_t *buff, int length) {
         return;
     }
 
-    if (length > MAX_TCP_LENGTH) {
+    if (length > MUMBLE_TCP_MAXLENGTH) {
         logger.warn("Sending %d B of data via SSL. Maximal allowed data length to receive is %d B.", length,
-                    MAX_TCP_LENGTH);
+            MUMBLE_TCP_MAXLENGTH);
     }
     try {
         write(sslSocket, boost::asio::buffer(buff, static_cast<size_t>(length)));
@@ -483,9 +483,9 @@ void mumlib::Transport::sendSsl(uint8_t *buff, int length) {
 }
 
 void mumlib::Transport::sendSslAsync(uint8_t *buff, int length) {
-    if (length > MAX_TCP_LENGTH) {
+    if (length > MUMBLE_TCP_MAXLENGTH) {
         logger.warn("Sending %d B of data via SSL. Maximal allowed data length to receive is %d B.", length,
-                    MAX_TCP_LENGTH);
+            MUMBLE_TCP_MAXLENGTH);
     }
 
     auto *asyncBuff = asyncBufferPool.malloc();
@@ -526,7 +526,7 @@ void mumlib::Transport::sendControlMessagePrivate(MessageType type, google::prot
 
     const int length = sizeof(type_network) + sizeof(size_network) + size;
 
-    uint8_t buff[MAX_UDP_LENGTH];
+    uint8_t buff[MUMBLE_UDP_MAXLENGTH];
 
     memcpy(buff, &type_network, sizeof(type_network));
 
@@ -571,7 +571,7 @@ void mumlib::Transport::sendEncodedAudioPacket(const uint8_t *buffer, int length
 
         const int packet = sizeof(netUdptunnelType) + sizeof(netLength) + length;
 
-        uint8_t packetBuff[MAX_UDP_LENGTH];
+        uint8_t packetBuff[MUMBLE_UDP_MAXLENGTH];
 
         memcpy(packetBuff, &netUdptunnelType, sizeof(netUdptunnelType));
         memcpy(packetBuff + sizeof(netUdptunnelType), &netLength, sizeof(netLength));

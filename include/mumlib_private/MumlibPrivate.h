@@ -26,6 +26,7 @@ namespace mumlib {
         //Audio
         void AudioSend(const int16_t* pcmData, int pcmLength);
         void AudioSendTarget(const int16_t* pcmData, int pcmLength, uint32_t target);
+        bool AudioSetInputSamplerate(uint32_t _samplerate);
 
         // Channel
         [[nodiscard]] uint32_t ChannelGetCurrent() const;
@@ -60,7 +61,7 @@ namespace mumlib {
     private:
         // Audio
         void audioDecoderCreate();
-        void audioEncoderCreate(uint32_t bitrate);
+        void audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate);
 
         // Channel
         void channelEmplace(MumbleChannel& channel);
@@ -98,9 +99,9 @@ namespace mumlib {
         //Audio
         std::unique_ptr<AudioDecoder> _audio_decoder;
         std::unique_ptr<AudioEncoder> _audio_encoder;
-        uint32_t _audio_bitrate = mumble_audio_bitrate;
-        std::array<int16_t, mumble_audio_samplerate*mumble_audio_maxframelength/1000> _audio_buffer_rx;
-        std::array<uint8_t, mumble_audio_samplerate*mumble_audio_maxframelength/1000> _audio_buffer_tx;
+        uint32_t _audio_bitrate = MUMBLE_OPUS_BITRATE;
+        std::array<int16_t, MUMBLE_AUDIO_SAMPLERATE*MUMBLE_AUDIO_CHANNELS*MUMBLE_OPUS_MAXLENGTH/1000> _audio_buffer_rx;
+        std::array<uint8_t, MUMBLE_AUDIO_SAMPLERATE*MUMBLE_AUDIO_CHANNELS*MUMBLE_OPUS_MAXLENGTH/1000> _audio_buffer_tx;
         std::chrono::time_point<std::chrono::system_clock> _audio_last_send;
         std::chrono::seconds _audio_reset_timeout = 5s;
         uint32_t _audio_seq_number = 0;

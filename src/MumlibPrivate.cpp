@@ -6,7 +6,7 @@ namespace mumlib {
 	MumlibPrivate::MumlibPrivate(Callback& callback) : _callback(callback)
 	{
 		audioDecoderCreate();
-        audioEncoderCreate(_audio_bitrate);
+        audioEncoderCreate(MUMBLE_AUDIO_SAMPLERATE, MUMBLE_OPUS_BITRATE);
 	}
 
 	//
@@ -28,14 +28,14 @@ namespace mumlib {
         //check interval and reset encoder
         auto interval = std::chrono::system_clock::now() - _audio_last_send;
         if (interval > _audio_reset_timeout) {
-            _audio_encoder->EncoderReset();
+            _audio_encoder->Reset();
             _audio_seq_number = 0;
         }
 
         //encode
         int len = 0;
         if (pcmData && pcmLength) {
-            len = _audio_encoder->EncoderProcess(
+            len = _audio_encoder->Process(
                 pcmData,
                 pcmLength,
                 _audio_buffer_tx.data(),
@@ -53,11 +53,11 @@ namespace mumlib {
 
         //update timestamp and sequence
         if (len > 0) {
-            _audio_seq_number += 100 * pcmLength / mumble_audio_samplerate;
+            _audio_seq_number += 100 * pcmLength / MUMBLE_AUDIO_SAMPLERATE;
         }
         else {
             _audio_seq_number = 0;
-            _audio_encoder->EncoderReset();
+            _audio_encoder->Reset();
         }
         _audio_last_send = std::chrono::system_clock::now();
 
@@ -65,14 +65,23 @@ namespace mumlib {
         transportSendAudio(encoded.data(), encoded.size());
     }
 
+    bool MumlibPrivate::AudioSetInputSamplerate(uint32_t samplerate)
+    {
+        if (!_audio_encoder) {
+            return false;
+        }
+
+        return _audio_encoder->SetInputSamplerate(samplerate);
+    }
+
     void MumlibPrivate::audioDecoderCreate()
     {
         _audio_decoder = std::make_unique<AudioDecoder>();
     }
 
-    void MumlibPrivate::audioEncoderCreate(uint32_t bitrate)
+    void MumlibPrivate::audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate)
     {
-        _audio_encoder = std::make_unique<AudioEncoder>(bitrate);
+        _audio_encoder = std::make_unique<AudioEncoder>(input_samplerate, output_bitrate);
     }
 
     //

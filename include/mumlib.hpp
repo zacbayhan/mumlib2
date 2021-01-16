@@ -28,6 +28,9 @@ namespace mumlib {
 
         virtual ~Mumlib();
 
+        //audio
+        bool AudioSetInputSamplerate(uint32_t samplerate);
+
         //user
         std::optional<MumbleUser> UserGet(int32_t session_id);
 

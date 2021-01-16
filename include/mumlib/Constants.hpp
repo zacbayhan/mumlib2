@@ -1,11 +1,17 @@
 #pragma once
 
+//stdlib
+#include <cstdint>
+
 namespace mumlib {
-    constexpr uint32_t mumble_audio_bitrate = 48000;
-    constexpr uint32_t mumble_audio_channels   = 1;
-    constexpr uint32_t mumble_audio_samplerate = 48000;
-    constexpr uint32_t mumble_audio_maxframelength = 60;
-    
-    constexpr int MAX_UDP_LENGTH = 1024;
-    constexpr int MAX_TCP_LENGTH = 129 * 1024; // 128 kB + some reserve
+    constexpr uint32_t MUMBLE_AUDIO_CHANNELS   = 1;
+    constexpr uint32_t MUMBLE_AUDIO_SAMPLERATE = 48000;
+
+    constexpr uint32_t MUMBLE_OPUS_BITRATE    = 48000;
+    constexpr uint32_t MUMBLE_OPUS_MAXLENGTH  = 60;
+
+    constexpr uint32_t MUMBLE_RESAMPLER_QUALITY = 3;
+
+    constexpr uint32_t MUMBLE_UDP_MAXLENGTH = 1024;
+    constexpr uint32_t MUMBLE_TCP_MAXLENGTH = 129 * 1024;
 }

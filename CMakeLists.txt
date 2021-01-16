@@ -57,6 +57,7 @@ set(MUMLIB_SOURCES
     src/AudioDecoder.cpp
     src/AudioEncoder.cpp
     src/AudioPacket.cpp
+    src/AudioResampler.cpp
     src/CryptState.cpp
     src/Logger.cpp
     src/MumlibPrivate.cpp
@@ -75,6 +76,8 @@ set(MUMLIB_HEADERS
     include/mumlib_private/AudioDecoder.hpp
     include/mumlib_private/AudioEncoder.hpp
     include/mumlib_private/AudioPacket.hpp
+    include/mumlib_private/AudioResampler.hpp
+
     include/mumlib_private/CryptState.hpp
     include/mumlib_private/MumlibPrivate.h
     include/mumlib_private/Transport.hpp

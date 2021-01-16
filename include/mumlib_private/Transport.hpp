@@ -84,7 +84,7 @@ namespace mumlib {
 
         udp::socket udpSocket;
         ip::udp::endpoint udpReceiverEndpoint;
-        uint8_t udpIncomingBuffer[MAX_UDP_LENGTH];
+        uint8_t udpIncomingBuffer[MUMBLE_UDP_MAXLENGTH];
         CryptState cryptState;
 
         ssl::context sslContext;
