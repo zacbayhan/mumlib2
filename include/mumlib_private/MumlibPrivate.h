@@ -4,6 +4,8 @@
 #include <chrono>
 #include <memory>
 #include <optional>
+#include <string>
+#include <vector>
 
 //mumlib
 #include "mumlib/Callback.hpp"
@@ -28,6 +30,9 @@ namespace mumlib {
         void AudioSendTarget(const int16_t* pcmData, int pcmLength, uint32_t target);
         bool AudioSetInputSamplerate(uint32_t samplerate);
         bool AudioSetOutputSamplerate(uint32_t samplerate);
+
+        // ACL
+        bool AclSetTokens(const std::vector<std::string>& tokens);
 
         // Channel
         [[nodiscard]] uint32_t ChannelGetCurrent() const;
@@ -93,6 +98,7 @@ namespace mumlib {
 
         //Transport
         void transportCreate();
+        bool transportSendAuthentication(const std::vector<std::string>& tokens);
         bool transportSendControl(MessageType type, google::protobuf::Message& message);
         bool transportSendAudio(const uint8_t* data, size_t len);
 

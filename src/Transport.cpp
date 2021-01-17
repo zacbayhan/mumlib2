@@ -142,18 +142,20 @@ void mumlib::Transport::sendVersion() {
     sendControlMessagePrivate(MessageType::VERSION, version);
 }
 
-void mumlib::Transport::sendAuthentication() {
+void mumlib::Transport::sendAuthentication(std::optional<const std::vector<std::string>> tokens) {
     logger.log("mumlib::Transport::sendAuthentication()");
 
-    string user, password;
-    tie(user, password) = credentials;
-
     MumbleProto::Authenticate authenticate;
-    authenticate.set_username(user);
-    authenticate.set_password(password);
+    authenticate.set_username(credentials.first);
+    authenticate.set_password(credentials.second);
     authenticate.clear_celt_versions();
-    authenticate.clear_tokens();
     authenticate.set_opus(true);
+    authenticate.clear_tokens();
+    if (tokens.has_value()) {
+        for (const auto& token : *tokens) {
+            authenticate.add_tokens(token);
+        }
+    }
 
     sendControlMessagePrivate(MessageType::AUTHENTICATE, authenticate);
 }
@@ -244,7 +246,7 @@ void mumlib::Transport::sslHandshakeHandler(const boost::system::error_code &err
         doReceiveSsl();
 
         sendVersion();
-        sendAuthentication();
+        sendAuthentication({});
     }
     else {
         throwTransportException((boost::format("Handshake failed: %s.") % error.message()).str());

@@ -9,6 +9,18 @@ namespace mumlib {
         audioEncoderCreate(MUMBLE_AUDIO_SAMPLERATE, MUMBLE_OPUS_BITRATE);
 	}
 
+    //
+    // ACL
+    //
+    bool MumlibPrivate::AclSetTokens(const std::vector<std::string>& tokens)
+    {
+        if (TransportGetState() != ConnectionState::CONNECTED) {
+            return false;
+        }
+
+        return transportSendAuthentication(tokens);
+    }
+
 	//
 	// Audio
 	//
@@ -115,8 +127,7 @@ namespace mumlib {
         if (!transportSendControl(MessageType::USERSTATE, userState)) {
             return false;
         }
-         
-        _channel_current = channel_id;
+
         return true;
     }
 
@@ -724,6 +735,16 @@ namespace mumlib {
 			_transport_cert,
 			_transport_key);
 	}
+
+    bool MumlibPrivate::transportSendAuthentication(const std::vector<std::string>& tokens)
+    {
+        if (!_transport) {
+            return false;
+        }
+
+        _transport->sendAuthentication({ tokens });
+        return true;
+    }
 
     bool MumlibPrivate::transportSendControl(MessageType type, google::protobuf::Message& message)
     {

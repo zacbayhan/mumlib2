@@ -5,6 +5,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 //mumlib
 #include "mumlib/Callback.hpp"
@@ -28,9 +29,18 @@ namespace mumlib {
 
         virtual ~Mumlib();
 
+        //acl
+        bool AclSetTokens(const std::vector<std::string>& tokens);
+
         //audio
         bool AudioSetInputSamplerate(uint32_t samplerate);
         bool AudioSetOutputSamplerate(uint32_t samplerate);
+
+        //channel
+        std::string ChannelCurrentGetName();
+        int32_t ChannelCurrentGetId();
+        bool ChannelJoin(const std::string& channel_name);
+        bool ChannelJoin(int channel_id);
 
         //user
         std::optional<MumbleUser> UserGet(int32_t session_id);
@@ -45,8 +55,6 @@ namespace mumlib {
 
         ConnectionState getConnectionState();
 
-        int getChannelId();
-
         vector<MumbleUser> getListAllUser();
 
         vector<MumbleChannel> getListAllChannel();
@@ -56,10 +64,6 @@ namespace mumlib {
         void sendAudioDataTarget(int targetId, const int16_t *pcmData, int pcmLength);
 
         void sendTextMessage(std::string message);
-
-        void joinChannel(int channelId);
-
-        void joinChannel(std::string channelName);
 
         void sendVoiceTarget(int targetId, mumlib::VoiceTargetType type, int sessionId);
 

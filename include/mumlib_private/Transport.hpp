@@ -3,7 +3,10 @@
 //stdlib
 #include <chrono>
 #include <functional>
+#include <optional>
+#include <string>
 #include <utility>
+#include <vector>
 
 //boost
 #include <boost/noncopyable.hpp>
@@ -57,6 +60,8 @@ namespace mumlib {
             ioService.run();
         }
 
+        void sendAuthentication(std::optional<const std::vector<std::string>> tokens);
+
     private:
         Logger logger;
 
@@ -107,8 +112,6 @@ namespace mumlib {
         void sendSslPing();
 
         void sendVersion();
-
-        void sendAuthentication();
 
         void processMessageInternal(MessageType messageType, uint8_t *buffer, int length);
 
