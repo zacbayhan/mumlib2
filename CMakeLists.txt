@@ -55,6 +55,7 @@ protobuf_generate_cpp(MUMLIB_SOURCES_PROTO MUMLIB_HEADERS_PROTO "src/Mumble.prot
 set(MUMLIB_SOURCES
     src/mumlib.cpp
     src/AudioDecoder.cpp
+    src/AudioDecoderSession.cpp
     src/AudioEncoder.cpp
     src/AudioPacket.cpp
     src/AudioResampler.cpp
@@ -74,6 +75,7 @@ set(MUMLIB_HEADERS
     include/mumlib/Structs.hpp
 
     include/mumlib_private/AudioDecoder.hpp
+    include/mumlib_private/AudioDecoderSession.hpp
     include/mumlib_private/AudioEncoder.hpp
     include/mumlib_private/AudioPacket.hpp
     include/mumlib_private/AudioResampler.hpp

@@ -65,6 +65,9 @@ namespace mumlib {
         bool VoicetargetSet(int targetId, VoiceTargetType type, const std::string& name);
 
     private:
+        // General
+        void generalClear();
+
         // Audio
         void audioDecoderCreate(uint32_t output_samplerate);
         void audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate);
@@ -103,6 +106,9 @@ namespace mumlib {
         bool transportSendAudio(const uint8_t* data, size_t len);
 
     private:
+        //Acl
+        std::vector<std::string> _acl_tokens;
+
         //Audio
         std::unique_ptr<AudioDecoder> _audio_decoder;
         std::unique_ptr<AudioEncoder> _audio_encoder;

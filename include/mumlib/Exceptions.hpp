@@ -10,9 +10,14 @@ namespace mumlib {
         MumlibException(std::string message) : std::runtime_error(message) { }
     };
 
-    class AudioException : public MumlibException {
+    class AudioDecoderException : public MumlibException {
     public:
-        explicit AudioException(std::string message) : MumlibException(message) { }
+        explicit AudioDecoderException(std::string message) : MumlibException(message) { }
+    };
+
+    class AudioEncoderException : public MumlibException {
+    public:
+        explicit AudioEncoderException(std::string message) : MumlibException(message) { }
     };
 
     class AudioPacketException : public MumlibException {

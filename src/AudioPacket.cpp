@@ -89,42 +89,42 @@ namespace mumlib {
     //
     // Getters
     //    
-    uint8_t AudioPacket::GetHeaderTarget()
+    uint8_t AudioPacket::GetHeaderTarget() const
     {
         return _header_target;
     }
 
-    AudioPacketType AudioPacket::GetHeaderType()
+    AudioPacketType AudioPacket::GetHeaderType() const
     {
         return _header_type;
     }
 
-    const std::vector<uint8_t>& AudioPacket::GetAudioPayload()
+    const std::vector<uint8_t>& AudioPacket::GetAudioPayload() const
     {
         return _audio_payload;
     }
 
-    int64_t AudioPacket::GetAudioSessionId()
+    int64_t AudioPacket::GetAudioSessionId() const
     {
         return _audio_sessionid;
     }
 
-    int64_t AudioPacket::GetAudioSequenceNumber()
+    int64_t AudioPacket::GetAudioSequenceNumber() const
     {
         return _audio_sequencenum;
     }
 
-    bool AudioPacket::GetAudioLastFlag()
+    bool AudioPacket::GetAudioLastFlag() const
     {
         return _audio_last;
     }
 
-    const std::array<float, 3>& AudioPacket::GetAudioPosition()
+    const std::array<float, 3>& AudioPacket::GetAudioPosition() const
     {
         return _audio_position;
     }
 
-    int64_t AudioPacket::GetPingTimestamp()
+    int64_t AudioPacket::GetPingTimestamp() const
     {
         return _ping_timestamp;
     }

@@ -88,7 +88,7 @@ namespace mumlib {
     }
 
     bool Mumlib::connect(string host, int port, string user, string password) {
-        impl->TransportConnect(host, port, user, password);
+        return impl->TransportConnect(host, port, user, password);
     }
 
     void Mumlib::disconnect() {

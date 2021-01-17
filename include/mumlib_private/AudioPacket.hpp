@@ -27,16 +27,16 @@ namespace mumlib {
 		//
 		// Getters
 		//
-		uint8_t GetHeaderTarget();
-		AudioPacketType GetHeaderType();
+		uint8_t GetHeaderTarget() const;
+		AudioPacketType GetHeaderType() const;
 
-		const std::vector<uint8_t>& GetAudioPayload();
-		int64_t GetAudioSessionId();
-		int64_t GetAudioSequenceNumber();
-		bool GetAudioLastFlag();
-		const std::array<float, 3>& GetAudioPosition();
+		const std::vector<uint8_t>& GetAudioPayload() const;
+		int64_t GetAudioSessionId() const;
+		int64_t GetAudioSequenceNumber() const;
+		bool GetAudioLastFlag() const;
+		const std::array<float, 3>& GetAudioPosition() const;
 
-		int64_t GetPingTimestamp();
+		int64_t GetPingTimestamp() const;
 
 	private:
 		AudioPacket() = default;

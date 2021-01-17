@@ -1,4 +1,5 @@
 //mumlib
+#include "mumlib/Constants.hpp"
 #include "mumlib/Exceptions.hpp"
 #include "mumlib_private/MumlibPrivate.h"
 
@@ -14,11 +15,18 @@ namespace mumlib {
     //
     bool MumlibPrivate::AclSetTokens(const std::vector<std::string>& tokens)
     {
-        if (TransportGetState() != ConnectionState::CONNECTED) {
-            return false;
+        bool result = false;
+        _acl_tokens = tokens;
+
+        if (TransportGetState() == ConnectionState::CONNECTED) {
+            result = transportSendAuthentication(_acl_tokens);
+        }
+        else {
+            //TODO: passthrough acl_tokens on connection stage
+            result = false;
         }
 
-        return transportSendAuthentication(tokens);
+        return result;
     }
 
 	//
@@ -62,13 +70,13 @@ namespace mumlib {
             return false;
         }
 
-   
-        return _audio_decoder->SetOutputSamplerate(samplerate);
+        return false;
+        //return _audio_decoder->SetOutputSamplerate(samplerate);
     }
 
     void MumlibPrivate::audioDecoderCreate(uint32_t output_samplerate)
     {
-        _audio_decoder = std::make_unique<AudioDecoder>(output_samplerate);
+        _audio_decoder = std::make_unique<AudioDecoder>(MUMBLE_AUDIO_SAMPLERATE, output_samplerate, MUMBLE_AUDIO_CHANNELS);
     }
 
     void MumlibPrivate::audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate)
@@ -147,6 +155,26 @@ namespace mumlib {
         _channel_current = channel_id;
     }
 
+    //
+    // General
+    //
+    void MumlibPrivate::generalClear()
+    {
+        _acl_tokens.clear();
+
+        _session_id = 0;
+
+        _channel_current = 0;
+        _channel_list.clear();
+
+        _user_list.clear();
+
+        _server_maxbandwidth = 0;
+        _server_allowhtml = 0;
+        _server_imagemessagelength = 0;
+        _server_messagelength = 0;
+        _server_welcometext.clear();
+    }
 
 	//
 	// Processing
@@ -497,18 +525,14 @@ namespace mumlib {
 	bool MumlibPrivate::processAudioPacket(AudioPacket& packet)
 	{
         if (packet.GetHeaderType() == AudioPacketType::Opus) {
-            auto  [buf, len] = _audio_decoder->Process(packet.GetAudioPayload());
-            if (len < 0) {
-                _logger.warn("MumlibPrivate::processAudioPacket() -> failed to decode Opus");
-                return false;
-            }
-
+            auto [buf, len] = _audio_decoder->Process(packet);
             _callback.audio(
                 packet.GetHeaderTarget(),
                 packet.GetAudioSessionId(),
                 packet.GetAudioSequenceNumber(),
                 buf,
-                len);
+                len
+            );
         }
         else if (packet.GetHeaderType() == AudioPacketType::Ping) {
             //TODO: callback for ping
@@ -695,8 +719,7 @@ namespace mumlib {
             return false;
         }
 
-        _channel_current = 0;
-        _session_id = 0;
+        generalClear();
 
 		if (!_transport) {
 			transportCreate();
@@ -711,8 +734,7 @@ namespace mumlib {
 		}
 		_transport.reset();
 
-        _channel_current = 0;
-        _session_id = 0;
+        generalClear();
 	}
 
 	ConnectionState MumlibPrivate::TransportGetState() const

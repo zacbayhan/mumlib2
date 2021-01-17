@@ -2,6 +2,7 @@
 
 //stdlib
 #include <cstdint>
+#include <map>
 #include <utility>
 
 //opus
@@ -9,6 +10,8 @@
 
 //mumlib
 #include "mumlib/Logger.hpp"
+#include "mumlib_private/AudioDecoderSession.hpp"
+#include "mumlib_private/AudioPacket.hpp"
 #include "mumlib_private/AudioResampler.hpp"
 
 namespace mumlib {
@@ -19,35 +22,24 @@ namespace mumlib {
         AudioDecoder& operator=(const AudioDecoder&) = delete;
         
         //ctor/dtor
-        explicit AudioDecoder(uint32_t output_samplerate);
+        explicit AudioDecoder(uint32_t samplerate_input, uint32_t samplerate_output, uint32_t channels);
         ~AudioDecoder();
-
-        void Reset();
 
         uint32_t GetInputSamplerate();
         uint32_t GetOutputSamplerate();
 
-        bool SetOutputSamplerate(uint32_t samplerate);
+        void SetInputSamplerate(uint32_t samplerate);
+        void SetOutputSamplerate(uint32_t samplerate);
 
-        std::pair<int16_t*, size_t> Process(const std::vector<uint8_t>& input);
-
-    private:
-        //decoder
-        void createOpus();
-        void createResampler();
-        void destroyOpus();
+        std::pair<const int16_t*, size_t> Process(const AudioPacket& packet);
 
     private:
-        Logger logger = Logger("mumlib/AudioDecoder");
-
-        OpusDecoder* _decoder = nullptr;
-        std::vector<int16_t> _decoder_buf;
-
-        std::unique_ptr<AudioResampler> _resampler;
-        std::vector<int16_t> _resampler_buf;
+        Logger _logger = Logger("mumlib/AudioDecoder");
 
         uint32_t _channels = 0;
         uint32_t _samplerate_input = 0;
         uint32_t _samplerate_output = 0;
+
+        std::map<int32_t, std::unique_ptr<AudioDecoderSession>> _sessions;
     };
 }

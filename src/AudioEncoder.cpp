@@ -40,7 +40,7 @@ namespace mumlib {
         int error = 0;
         _encoder = opus_encoder_create(_samplerate_output, _channels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK) {
-            throw AudioException((boost::format("failed to initialize OPUS encoder: %s") % opus_strerror(error)).str());
+            throw AudioEncoderException((boost::format("failed to initialize OPUS encoder: %s") % opus_strerror(error)).str());
         }
     }
 
@@ -63,12 +63,12 @@ namespace mumlib {
 
     void AudioEncoder::reset() {
         if (!_encoder) {
-            throw AudioException("failed to reset encoder");
+            throw AudioEncoderException("failed to reset encoder");
         }
 
         int status = opus_encoder_ctl(_encoder, OPUS_RESET_STATE, nullptr);
         if (status != OPUS_OK) {
-            throw AudioException((boost::format("failed to reset encoder: %s") % opus_strerror(status)).str());
+            throw AudioEncoderException((boost::format("failed to reset encoder: %s") % opus_strerror(status)).str());
         }
 
         if (_resampler) {
@@ -100,17 +100,17 @@ namespace mumlib {
         _encoder_buf.resize(bitrate * MUMBLE_OPUS_MAXLENGTH / 1000);
 
         if (!_encoder) {
-            throw AudioException("failed to reset encoder");
+            throw AudioEncoderException("failed to reset encoder");
         }
 
         int error = opus_encoder_ctl(_encoder, OPUS_SET_VBR(0));
         if (error != OPUS_OK) {
-            throw AudioException((boost::format("failed to initialize variable bitrate: %s") % opus_strerror(error)).str());
+            throw AudioEncoderException((boost::format("failed to initialize variable bitrate: %s") % opus_strerror(error)).str());
         }
 
         error = opus_encoder_ctl(_encoder, OPUS_SET_BITRATE(bitrate));
         if (error != OPUS_OK) {
-            throw AudioException((boost::format("failed to initialize transmission bitrate to %d B/s: %s")
+            throw AudioEncoderException((boost::format("failed to initialize transmission bitrate to %d B/s: %s")
                 % bitrate % opus_strerror(error)).str());
         }
     }
@@ -143,7 +143,7 @@ namespace mumlib {
             );
 
             if (out_len <= 0) {
-                throw AudioException((boost::format("failed to encode %d B of PCM data: %s") % in_len % opus_strerror(out_len)).str());
+                throw AudioEncoderException((boost::format("failed to encode %d B of PCM data: %s") % in_len % opus_strerror(out_len)).str());
             }
         }
 
