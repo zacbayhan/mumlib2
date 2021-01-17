@@ -687,8 +687,17 @@ namespace mumlib {
 	//
 	// Transport
 	//
-	void MumlibPrivate::TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password)
+	bool MumlibPrivate::TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password)
 	{
+        if (TransportGetState() == ConnectionState::CONNECTED ||
+            TransportGetState() == ConnectionState::IN_PROGRESS ||
+            TransportGetState() == ConnectionState::DISCONNECTING) {
+            return false;
+        }
+
+        _channel_current = 0;
+        _session_id = 0;
+
 		if (!_transport) {
 			transportCreate();
 		}
@@ -701,6 +710,9 @@ namespace mumlib {
 			_transport->disconnect();
 		}
 		_transport.reset();
+
+        _channel_current = 0;
+        _session_id = 0;
 	}
 
 	ConnectionState MumlibPrivate::TransportGetState() const

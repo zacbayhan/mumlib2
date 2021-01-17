@@ -45,7 +45,7 @@ namespace mumlib {
         bool TextSend(const std::string& message);
 
         // Transport
-        void TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password);
+        bool TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password);
         void TransportDisconnect();
         [[nodiscard]] ConnectionState TransportGetState() const;
         void TransportRun();

@@ -87,7 +87,7 @@ namespace mumlib {
         return impl->ChannelGetList();
     }
 
-    void Mumlib::connect(string host, int port, string user, string password) {
+    bool Mumlib::connect(string host, int port, string user, string password) {
         impl->TransportConnect(host, port, user, password);
     }
 

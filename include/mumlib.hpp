@@ -47,7 +47,7 @@ namespace mumlib {
 
 
         //
-        void connect(string host, int port, string user, string password);
+        bool connect(string host, int port, string user, string password);
 
         void disconnect();
 
