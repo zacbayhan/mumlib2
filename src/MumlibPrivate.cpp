@@ -524,6 +524,7 @@ namespace mumlib {
                 packet.GetHeaderTarget(),
                 packet.GetAudioSessionId(),
                 packet.GetAudioSequenceNumber(),
+                packet.GetAudioLastFlag(),
                 buf,
                 len
             );

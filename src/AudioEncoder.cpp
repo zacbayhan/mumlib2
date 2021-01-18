@@ -157,6 +157,7 @@ namespace mumlib {
 
         //update timestamp and sequence
         if (out_len > 0) {
+            //1 per 10ms
             _sequence_number += 100 * in_len / MUMBLE_AUDIO_SAMPLERATE;
         }
         else {

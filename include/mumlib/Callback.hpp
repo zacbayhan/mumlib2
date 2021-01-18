@@ -23,6 +23,7 @@ namespace mumlib {
                 int target,
                 int sessionId,
                 int sequenceNumber,
+                bool is_last,
                 const int16_t* audio_buf,
                 size_t samples_count) { };
 
