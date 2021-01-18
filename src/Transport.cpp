@@ -57,7 +57,7 @@ mumlib::Transport::~Transport() {
     delete[] sslIncomingBuffer;
 }
 
-void mumlib::Transport::connect(const std::string& host, int port, const std::string& user, const std::string& password, const std::vector<std::string>& tokens) {
+void mumlib::Transport::connect(const std::string& host, int port, const std::string& user, const std::string& password) {
 
     logger.log("mumlib::Transport::connect()");
 
@@ -65,7 +65,6 @@ void mumlib::Transport::connect(const std::string& host, int port, const std::st
 
     connectionParams = make_pair(host, port);
     credentials = make_pair(user, password);
-    _tokens = tokens;
     udpActive = false;
     state = ConnectionState::IN_PROGRESS;
 
@@ -247,7 +246,7 @@ void mumlib::Transport::sslHandshakeHandler(const boost::system::error_code &err
         doReceiveSsl();
 
         sendVersion();
-        sendAuthentication(_tokens);
+        sendAuthentication({});
     }
     else {
         throwTransportException((boost::format("Handshake failed: %s.") % error.message()).str());

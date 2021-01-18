@@ -42,7 +42,7 @@ namespace mumlib {
 
         ~Transport();
 
-        void connect(const std::string& host, int port, const std::string& user, const std::string& password, const std::vector<std::string>& tokens);
+        void connect(const std::string& host, int port, const std::string& user, const std::string& password);
 
         void disconnect();
 
@@ -70,8 +70,6 @@ namespace mumlib {
         std::pair<std::string, int> connectionParams;
 
         std::pair<std::string, std::string> credentials;
-
-        std::vector<std::string> _tokens;
 
         std::function<bool(MessageType, uint8_t*, int)> processMessageFunction;
 

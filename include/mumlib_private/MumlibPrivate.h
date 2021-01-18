@@ -45,7 +45,7 @@ namespace mumlib {
         bool TextSend(const std::string& message);
 
         // Transport
-        bool TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password, const std::vector<std::string>& tokens);
+        bool TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password);
         void TransportDisconnect();
         [[nodiscard]] ConnectionState TransportGetState() const;
         void TransportRun();
@@ -106,9 +106,6 @@ namespace mumlib {
         bool transportSendAudio(const uint8_t* data, size_t len);
 
     private:
-        //Acl
-        std::vector<std::string> _acl_tokens;
-
         //Audio
         std::unique_ptr<AudioDecoder> _audio_decoder;
         std::unique_ptr<AudioEncoder> _audio_encoder;
