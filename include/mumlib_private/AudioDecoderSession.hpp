@@ -1,6 +1,7 @@
 #pragma once
 
 //stdlib
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -29,6 +30,8 @@ namespace mumlib {
         bool SetInputSamplerate(uint32_t samplerate);
         bool SetOutputSamplerate(uint32_t samplerate);
 
+        std::chrono::time_point<std::chrono::steady_clock> GetLastTimepoint();
+
     private:
         void opusCreate();
         size_t opusDecode(const uint8_t* in_data, size_t in_len);
@@ -51,5 +54,7 @@ namespace mumlib {
         uint32_t _samplerate_input = 0;
         uint32_t _samplerate_output = 0;
         int32_t _session_id;
+
+        std::chrono::time_point<std::chrono::steady_clock> _timepoint_last;
     };
 }

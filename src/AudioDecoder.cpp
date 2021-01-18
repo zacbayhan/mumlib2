@@ -54,6 +54,19 @@ namespace mumlib {
 
     std::pair<const int16_t*, size_t> AudioDecoder::Process(const AudioPacket& packet)
     {
+        //cleanup
+        auto current_time = std::chrono::steady_clock::now();
+        for (auto it = _sessions.begin(); it != _sessions.end();)
+        {
+            if ((current_time - it->second->GetLastTimepoint()) > _timeout_inactivity) {
+                _sessions.erase(it++);
+            }
+            else {
+                ++it;
+            }
+        }
+
+        //process
         auto session_id = packet.GetAudioSessionId();
         if (!_sessions.contains(session_id)) {
             _sessions.emplace(session_id, std::make_unique<AudioDecoderSession>(session_id, _samplerate_input, _samplerate_output, _channels));

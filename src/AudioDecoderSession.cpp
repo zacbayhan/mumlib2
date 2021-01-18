@@ -36,6 +36,11 @@ namespace mumlib {
 		resamplerCreate();
 		return true;
 	}
+
+	std::chrono::time_point<std::chrono::steady_clock> AudioDecoderSession::GetLastTimepoint()
+	{
+		return _timepoint_last;
+	}
 	
 	void AudioDecoderSession::opusCreate()
 	{
@@ -122,6 +127,8 @@ namespace mumlib {
 		if (packet.GetAudioLastFlag()) {
 			reset();
 		}
+
+		_timepoint_last = std::chrono::steady_clock::now();
 
 		return std::make_pair(result_data, result_size);
 	}

@@ -1,6 +1,7 @@
 #pragma once
 
 //stdlib
+#include <chrono>
 #include <cstdint>
 #include <map>
 #include <utility>
@@ -39,6 +40,8 @@ namespace mumlib {
         uint32_t _channels = 0;
         uint32_t _samplerate_input = 0;
         uint32_t _samplerate_output = 0;
+
+        const std::chrono::seconds _timeout_inactivity = std::chrono::seconds(300);
 
         std::map<int32_t, std::unique_ptr<AudioDecoderSession>> _sessions;
     };
