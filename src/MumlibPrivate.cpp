@@ -725,6 +725,7 @@ namespace mumlib {
 			transportCreate();
 		}
 		_transport->connect(host, port, user, password);
+        return true;
 	}
 
 	void MumlibPrivate::TransportDisconnect()
