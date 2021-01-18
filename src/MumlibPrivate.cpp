@@ -18,12 +18,9 @@ namespace mumlib {
         bool result = false;
         _acl_tokens = tokens;
 
+        //apply tokens to existing connection
         if (TransportGetState() == ConnectionState::CONNECTED) {
             result = transportSendAuthentication(_acl_tokens);
-        }
-        else {
-            //TODO: passthrough acl_tokens on connection stage
-            result = false;
         }
 
         return result;
@@ -711,7 +708,7 @@ namespace mumlib {
 	//
 	// Transport
 	//
-	bool MumlibPrivate::TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password)
+	bool MumlibPrivate::TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password,const std::vector<std::string>& tokens)
 	{
         if (TransportGetState() == ConnectionState::CONNECTED ||
             TransportGetState() == ConnectionState::IN_PROGRESS ||
@@ -721,10 +718,12 @@ namespace mumlib {
 
         generalClear();
 
+        AclSetTokens(tokens);
+
 		if (!_transport) {
 			transportCreate();
 		}
-		_transport->connect(host, port, user, password);
+		_transport->connect(host, port, user, password, tokens);
         return true;
 	}
 

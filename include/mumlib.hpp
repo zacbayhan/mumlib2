@@ -47,7 +47,7 @@ namespace mumlib {
 
 
         //
-        bool connect(string host, int port, string user, string password);
+        bool connect(string host, int port, string user, string password, const std::vector<std::string>& tokens = {});
 
         void disconnect();
 
