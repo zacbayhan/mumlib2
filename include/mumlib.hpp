@@ -44,8 +44,8 @@ namespace mumlib {
 
         //user
         std::optional<MumbleUser> UserGet(int32_t session_id);
-
-
+        std::vector<MumbleUser> UserGetInChannel(int32_t channel_id);
+        std::vector<MumbleUser> UserGetInChannel(const std::string& channel_name);
         //
         bool connect(string host, int port, string user, string password);
 

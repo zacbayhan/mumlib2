@@ -75,6 +75,17 @@ namespace mumlib {
         return impl->UserGet(session_id);
     }
 
+    std::vector<MumbleUser> Mumlib::UserGetInChannel(int32_t channel_id)
+    {
+        return impl->UserGetInChannel(channel_id);
+    }
+
+    std::vector<MumbleUser> Mumlib::UserGetInChannel(const std::string& channel_name)
+    {
+        int32_t channel_id = impl->ChannelFind(channel_name);
+        return impl->UserGetInChannel(channel_id);
+    }
+
     ConnectionState Mumlib::getConnectionState() {
         return impl->TransportGetState();
     }

@@ -6,13 +6,14 @@
 
 namespace mumlib {
     struct MumbleUser {
-        int32_t sessionId;
-        std::string name;
+        int32_t sessionId = -1;
+        int32_t channelId = -1;
+        std::string name = "";
     };
 
     struct MumbleChannel {
-        int32_t channelId;
-        std::string name;
-        std::string description;
+        int32_t channelId = -1;
+        std::string name = "";
+        std::string description = "";
     };
 }

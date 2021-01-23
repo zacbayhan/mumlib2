@@ -161,7 +161,7 @@ namespace mumlib {
         _channel_current = 0;
         _channel_list.clear();
 
-        _user_list.clear();
+        userClear();
 
         _server_maxbandwidth = 0;
         _server_allowhtml = 0;
@@ -449,17 +449,19 @@ namespace mumlib {
         int32_t priority_speaker = userState.has_priority_speaker() ? userState.priority_speaker() : -1;
         int32_t recording = userState.has_recording() ? userState.recording() : -1;
 
+        //update current channel
         if (session == sessionGet()) {
             channelSet(channel_id);
         }
 
-        MumbleUser mumbleUser;
+
+        //update user lsit
+        MumbleUser mumbleUser{};
         mumbleUser.name = userState.name();
+        mumbleUser.channelId = channel_id;
         mumbleUser.sessionId = session;
 
-        if (!UserExists(session)) {
-            userEmplace(mumbleUser);
-        }
+        userUpdate(mumbleUser);
 
         _callback.userState(session,
             actor,
@@ -550,53 +552,67 @@ namespace mumlib {
     // User
     //
 
-    std::optional<MumbleUser> MumlibPrivate::UserGet(int32_t session_id) const
+    std::optional<MumbleUser> MumlibPrivate::UserGet(int32_t session_id)
     {
-        for (const auto& user : _user_list) {
-            if (user.sessionId == session_id) {
-                return { user };
-            }
+        if (_user_map.contains(session_id)) {
+            return { _user_map[session_id] };
         }
-
+        
         return {};
     }
 
     std::vector<MumbleUser> MumlibPrivate::UserGetList() const
     {
-        return _user_list;
+        std::vector<MumbleUser> result;
+        for (const auto& user : _user_map) {
+            result.push_back(user.second);
+        }
+        return result;
+    }
+
+    std::vector<MumbleUser> MumlibPrivate::UserGetInChannel(int32_t channel_id) const
+    {
+        std::vector<MumbleUser> result;
+        for (const auto& user : _user_map) {
+            if (user.second.channelId == channel_id) {
+                result.push_back(user.second);
+            }
+        }
+        return result;
     }
 
     bool MumlibPrivate::UserExists(uint32_t user_id) const
     {
-        for (auto& user : _user_list) {
-            if (user.sessionId == user_id) {
-                return true;
-            }
-        }
-
-        return false;
+        return _user_map.contains(user_id);
     }
 
-    void MumlibPrivate::userEmplace(MumbleUser& user)
+    void MumlibPrivate::userUpdate(MumbleUser& user)
     {
-        _user_list.push_back(user);
+        //name could be skipped on second trasmission
+        if (_user_map.contains(user.sessionId)) {
+            user.name = _user_map[user.sessionId].name;
+        }
+
+        _user_map[user.sessionId] = user;
+    }
+
+    void MumlibPrivate::userClear()
+    {
+        _user_map.clear();
     }
 
     void MumlibPrivate::userErase(uint32_t user_id)
     {
-        for (size_t i = 0; i < _user_list.size(); i++) {
-            if (_user_list[i].sessionId == user_id) {
-                _user_list.erase(_user_list.begin() + i);
-                return;
-            }
+        if (_user_map.contains(user_id)) {
+            _user_map.erase(user_id);
         }
     }
 
     int32_t MumlibPrivate::UserFind(const std::string& user_name) const
     {
-        for (auto& user : _user_list) {
-            if (user.name == user_name) {
-                return user.sessionId;
+        for (auto& user : _user_map) {
+            if (user.second.name == user_name) {
+                return user.second.sessionId;
             }
         }
 

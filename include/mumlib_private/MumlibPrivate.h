@@ -37,7 +37,7 @@ namespace mumlib {
         // Channel
         [[nodiscard]] uint32_t ChannelGetCurrent() const;
         [[nodiscard]] std::vector<MumbleChannel> ChannelGetList() const;
-        [[nodiscard]]  bool ChannelExists(uint32_t channel_id) const;
+        [[nodiscard]] bool ChannelExists(uint32_t channel_id) const;
         [[nodiscard]] int32_t ChannelFind(const std::string& channel_name) const;
         bool ChannelJoin(uint32_t channel_id);
 
@@ -53,8 +53,9 @@ namespace mumlib {
         void TransportSetKey(const std::string& key);
 
         //User
-        [[nodiscard]] std::optional<MumbleUser> UserGet(int32_t session_id) const;
+        [[nodiscard]] std::optional<MumbleUser> UserGet(int32_t session_id);
         [[nodiscard]] std::vector<MumbleUser> UserGetList() const;
+        [[nodiscard]] std::vector<MumbleUser> UserGetInChannel(int32_t channel_id) const;
         [[nodiscard]] bool UserExists(uint32_t user_id) const;
         [[nodiscard]] int32_t UserFind(const std::string& user_name) const;
         bool UserSendState(UserState field, const std::string& val);
@@ -93,8 +94,9 @@ namespace mumlib {
         bool processAudioPacket(AudioPacket& packet);
 
         // User
-        void userEmplace(MumbleUser& user);
+        void userClear();
         void userErase(uint32_t user_id);
+        void userUpdate(MumbleUser& user);   
 
         //Session
         [[nodiscard]] uint32_t sessionGet() const;
@@ -127,7 +129,7 @@ namespace mumlib {
         std::string _transport_key;
 
         //User
-        std::vector<MumbleUser> _user_list;
+        std::map<int32_t, MumbleUser> _user_map; //{session_id, MumbleUser}
 
         //Session
         uint32_t _session_id = 0;
