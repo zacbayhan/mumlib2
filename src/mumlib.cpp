@@ -86,6 +86,28 @@ namespace mumlib {
         return impl->UserGetInChannel(channel_id);
     }
 
+    bool Mumlib::UserMuted(const std::string& user_name)
+    {
+        int32_t user_id = impl->UserFind(user_name);
+        return impl->UserMuted(user_id);
+    }
+
+    bool Mumlib::UserMuted(int32_t user_id)
+    {
+        return impl->UserMuted(user_id);
+    }
+
+    bool Mumlib::UserMute(const std::string& user_name, bool mute_state)
+    {
+        int32_t user_id = impl->UserFind(user_name);
+        return impl->UserMute(user_id, mute_state);
+    }
+
+    bool Mumlib::UserMute(int32_t user_id, bool mute_state)
+    {
+        return impl->UserMute(user_id, mute_state);
+    }
+
     ConnectionState Mumlib::getConnectionState() {
         return impl->TransportGetState();
     }

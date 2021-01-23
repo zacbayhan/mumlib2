@@ -520,6 +520,11 @@ namespace mumlib {
 
 	bool MumlibPrivate::processAudioPacket(AudioPacket& packet)
 	{
+        //check for mute
+        if (UserMuted(packet.GetAudioSessionId())) {
+            return true;
+        }
+
         if (packet.GetHeaderType() == AudioPacketType::Opus) {
             auto [buf, len] = _audio_decoder->Process(packet);
             _callback.audio(
@@ -586,10 +591,21 @@ namespace mumlib {
         return _user_map.contains(user_id);
     }
 
+    bool MumlibPrivate::UserMuted(int32_t user_id)
+    {
+        if (!_user_map.contains(user_id)) {
+            return false;
+        }
+
+        return _user_map[user_id].local_mute;
+    }
+
     void MumlibPrivate::userUpdate(MumbleUser& user)
     {
         //name could be skipped on second trasmission
+        //local muted state must be copied
         if (_user_map.contains(user.sessionId)) {
+            user.local_mute = _user_map[user.sessionId].local_mute;
             user.name = _user_map[user.sessionId].name;
         }
 
@@ -617,6 +633,16 @@ namespace mumlib {
         }
 
         return -1;
+    }
+
+    bool MumlibPrivate::UserMute(int32_t user_id, bool mute_state)
+    {
+        if (!_user_map.contains(user_id)) {
+            return false;
+        }
+
+        _user_map[user_id].local_mute = mute_state;
+        return true;;
     }
 
     bool MumlibPrivate::UserSendState(UserState field, bool val)

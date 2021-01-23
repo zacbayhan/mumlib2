@@ -57,7 +57,9 @@ namespace mumlib {
         [[nodiscard]] std::vector<MumbleUser> UserGetList() const;
         [[nodiscard]] std::vector<MumbleUser> UserGetInChannel(int32_t channel_id) const;
         [[nodiscard]] bool UserExists(uint32_t user_id) const;
+        [[nodiscard]] bool UserMuted(int32_t user_id);
         [[nodiscard]] int32_t UserFind(const std::string& user_name) const;
+        bool UserMute(int32_t user_id, bool mute_state);
         bool UserSendState(UserState field, const std::string& val);
         bool UserSendState(UserState field, bool val);
 
