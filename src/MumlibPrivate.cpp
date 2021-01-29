@@ -31,11 +31,21 @@ namespace mumlib {
 
     void MumlibPrivate::AudioSend(const int16_t* pcmData, int pcmLength)
     {
+        //check buffer
+        if (!pcmData || !pcmLength) {
+            return;
+        }
+
         AudioSendTarget(pcmData, pcmLength, 0);
     }
 
     void MumlibPrivate::AudioSendTarget(const int16_t* pcmData, int pcmLength, uint32_t target)
     {
+        //check buffer
+        if (!pcmData || !pcmLength) {
+            return;
+        }
+
         //check encoder availability
         if (!_audio_encoder) {
             return;
