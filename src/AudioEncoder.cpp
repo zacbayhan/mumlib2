@@ -15,14 +15,10 @@ namespace mumlib {
     // Ctor/Dtor
     //
 
-    AudioEncoder::AudioEncoder(uint32_t input_samplerate, uint32_t output_bitrate) {
-        _samplerate_input = input_samplerate;
-        _samplerate_output = MUMBLE_AUDIO_SAMPLERATE;
+    AudioEncoder::AudioEncoder(uint32_t output_bitrate) {
         _channels = MUMBLE_AUDIO_CHANNELS;
 
-
         createOpus();
-        createResampler();
 
         SetBitrate(output_bitrate);
 
@@ -38,18 +34,9 @@ namespace mumlib {
         destroyOpus();
 
         int error = 0;
-        _encoder = opus_encoder_create(_samplerate_output, _channels, OPUS_APPLICATION_VOIP, &error);
+        _encoder = opus_encoder_create(MUMBLE_AUDIO_SAMPLERATE, _channels, OPUS_APPLICATION_VOIP, &error);
         if (error != OPUS_OK) {
             throw AudioEncoderException((boost::format("failed to initialize OPUS encoder: %s") % opus_strerror(error)).str());
-        }
-    }
-
-    void AudioEncoder::createResampler()
-    {
-        _resampler.reset();
-        if (_samplerate_input != _samplerate_output) {
-            _resampler = std::make_unique<AudioResampler>(_channels, _samplerate_input, _samplerate_output, MUMBLE_RESAMPLER_QUALITY);
-            _resampler_buf.resize(_samplerate_output * _channels * MUMBLE_OPUS_MAXLENGTH / 1000);
         }
     }
 
@@ -71,28 +58,7 @@ namespace mumlib {
             throw AudioEncoderException((boost::format("failed to reset encoder: %s") % opus_strerror(status)).str());
         }
 
-        if (_resampler) {
-            _resampler->Reset();
-        }
-
         _sequence_number = 0;
-    }
-
-    uint32_t AudioEncoder::GetInputSamplerate()
-    {
-        return _samplerate_input;
-    }
-
-    uint32_t AudioEncoder::GetOutputSamplerate()
-    {
-        return _samplerate_output;
-    }
-
-    bool AudioEncoder::SetInputSamplerate(uint32_t samplerate)
-    {
-        _samplerate_input = samplerate;
-        createResampler();
-        return true;
     }
 
     void AudioEncoder::SetBitrate(uint32_t bitrate)
@@ -129,11 +95,6 @@ namespace mumlib {
         
         //resample and encode
         if (pcmData && pcmLength) {
-            if (_resampler) {
-                in_len = _resampler->Process(pcmData, pcmLength, _resampler_buf.data(), _resampler_buf.size());
-                in_data = _resampler_buf.data();
-            }
-
             out_len = opus_encode(
                 _encoder,
                 in_data,

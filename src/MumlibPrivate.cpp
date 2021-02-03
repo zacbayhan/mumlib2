@@ -61,33 +61,14 @@ namespace mumlib {
         catch (const TransportException&) {}
     }
 
-    bool MumlibPrivate::AudioSetInputSamplerate(uint32_t samplerate)
-    {
-        if (!_audio_encoder) {
-            return false;
-        }
-
-        return _audio_encoder->SetInputSamplerate(samplerate);
-    }
-
-    bool MumlibPrivate::AudioSetOutputSamplerate(uint32_t samplerate)
-    {
-        if (!_audio_decoder) {
-            return false;
-        }
-
-        return false;
-        //return _audio_decoder->SetOutputSamplerate(samplerate);
-    }
-
     void MumlibPrivate::audioDecoderCreate(uint32_t output_samplerate)
     {
-        _audio_decoder = std::make_unique<AudioDecoder>(MUMBLE_AUDIO_SAMPLERATE, output_samplerate, MUMBLE_AUDIO_CHANNELS);
+        _audio_decoder = std::make_unique<AudioDecoder>(MUMBLE_AUDIO_CHANNELS);
     }
 
     void MumlibPrivate::audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate)
     {
-        _audio_encoder = std::make_unique<AudioEncoder>(input_samplerate, output_bitrate);
+        _audio_encoder = std::make_unique<AudioEncoder>(output_bitrate);
     }
 
     //

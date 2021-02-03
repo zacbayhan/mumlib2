@@ -32,10 +32,6 @@ namespace mumlib {
         //acl
         bool AclSetTokens(const std::vector<std::string>& tokens);
 
-        //audio
-        bool AudioSetInputSamplerate(uint32_t samplerate);
-        bool AudioSetOutputSamplerate(uint32_t samplerate);
-
         //channel
         std::string ChannelCurrentGetName();
         int32_t ChannelCurrentGetId();

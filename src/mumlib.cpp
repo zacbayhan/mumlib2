@@ -24,15 +24,6 @@ namespace mumlib {
     //
     // Audio
     //
-    bool Mumlib::AudioSetInputSamplerate(uint32_t samplerate)
-    {
-        return impl->AudioSetInputSamplerate(samplerate);
-    }
-
-    bool Mumlib::AudioSetOutputSamplerate(uint32_t samplerate)
-    {
-        return impl->AudioSetOutputSamplerate(samplerate);
-    }
     
     //
     // Channel

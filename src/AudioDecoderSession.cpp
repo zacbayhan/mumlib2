@@ -4,37 +4,18 @@
 #include "mumlib_private/AudioDecoderSession.hpp"
 
 namespace mumlib {
-	AudioDecoderSession::AudioDecoderSession(int32_t session_id, uint32_t samplerate_input, uint32_t samplerate_output, uint32_t channels)
+	AudioDecoderSession::AudioDecoderSession(int32_t session_id, uint32_t channels)
 	{
 		_session_id = session_id;
-		_samplerate_input = samplerate_input;
-		_samplerate_output = samplerate_output;
 		_channels = channels;
 
 		opusCreate();
 		opusResize();
-		resamplerCreate();
 	}
 
 	AudioDecoderSession::~AudioDecoderSession()
 	{
 		opusDestroy();
-	}
-
-	bool AudioDecoderSession::SetInputSamplerate(uint32_t samplerate)
-	{
-		_samplerate_input = samplerate;
-		opusCreate();
-		resamplerCreate();
-		return true;
-	}
-
-	bool AudioDecoderSession::SetOutputSamplerate(uint32_t samplerate)
-	{
-		_samplerate_output = samplerate;
-		opusResize();
-		resamplerCreate();
-		return true;
 	}
 
 	std::chrono::time_point<std::chrono::steady_clock> AudioDecoderSession::GetLastTimepoint()
@@ -47,7 +28,7 @@ namespace mumlib {
 		opusDestroy();
 
 		int error = 0;
-		_opus = opus_decoder_create(_samplerate_input, _channels, &error);
+		_opus = opus_decoder_create(MUMBLE_AUDIO_SAMPLERATE, _channels, &error);
 		if (error != OPUS_OK) {
 			throw AudioDecoderException("opusCreate-> failed to init decoder");
 		}
@@ -72,7 +53,7 @@ namespace mumlib {
 
 	void AudioDecoderSession::opusResize()
 	{
-		size_t target_size = _samplerate_output * MUMBLE_AUDIO_CHANNELS * MUMBLE_OPUS_MAXLENGTH / 1000;
+		size_t target_size = MUMBLE_AUDIO_SAMPLERATE * MUMBLE_AUDIO_CHANNELS * MUMBLE_OPUS_MAXLENGTH / 1000;
 		if (_opus_output_buf.size() != target_size) {
 			_opus_output_buf.resize(target_size);
 		};
@@ -88,20 +69,8 @@ namespace mumlib {
 		if (status != OPUS_OK) {
 			throw AudioDecoderException("failed to reset encoder: 2");
 		}
-
-		if (_resampler) {
-			_resampler->Reset();
-		}
 	}
 
-	void AudioDecoderSession::resamplerCreate()
-	{
-		_resampler.reset();
-		if (_samplerate_input != _samplerate_output) {
-			_resampler = std::make_unique<AudioResampler>(_channels, _samplerate_input, _samplerate_output, MUMBLE_RESAMPLER_QUALITY);
-			_resampler_buf.resize(_samplerate_output * _channels * MUMBLE_OPUS_MAXLENGTH / 1000);
-		}
-	}
 	std::pair<const int16_t*, size_t> AudioDecoderSession::Process(const AudioPacket& packet)
 	{
 		int16_t* result_data = nullptr;
@@ -114,12 +83,6 @@ namespace mumlib {
 
 			if (result_size <= 0) {
 				throw AudioDecoderException("failed to decode opus data");
-			}
-
-			//resample
-			if (_resampler) {
-				result_size = _resampler->Process(_opus_output_buf.data(), result_size, _resampler_buf.data(), _resampler_buf.size());
-				result_data = _resampler_buf.data();
 			}
 		}
 

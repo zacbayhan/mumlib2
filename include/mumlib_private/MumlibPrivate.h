@@ -28,8 +28,6 @@ namespace mumlib {
         //Audio
         void AudioSend(const int16_t* pcmData, int pcmLength);
         void AudioSendTarget(const int16_t* pcmData, int pcmLength, uint32_t target);
-        bool AudioSetInputSamplerate(uint32_t samplerate);
-        bool AudioSetOutputSamplerate(uint32_t samplerate);
 
         // ACL
         bool AclSetTokens(const std::vector<std::string>& tokens);

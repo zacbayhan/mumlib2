@@ -4,8 +4,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(mumlib)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 include(CMakePackageConfigHelpers)
 
 set (CMAKE_CXX_STANDARD 20)
@@ -41,7 +39,6 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(Protobuf REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Opus CONFIG REQUIRED)
-find_package(SpeexDSP REQUIRED)
 
 #
 # Library
@@ -58,7 +55,6 @@ set(MUMLIB_SOURCES
     src/AudioDecoderSession.cpp
     src/AudioEncoder.cpp
     src/AudioPacket.cpp
-    src/AudioResampler.cpp
     src/CryptState.cpp
     src/Logger.cpp
     src/MumlibPrivate.cpp
@@ -78,7 +74,6 @@ set(MUMLIB_HEADERS
     include/mumlib_private/AudioDecoderSession.hpp
     include/mumlib_private/AudioEncoder.hpp
     include/mumlib_private/AudioPacket.hpp
-    include/mumlib_private/AudioResampler.hpp
 
     include/mumlib_private/CryptState.hpp
     include/mumlib_private/MumlibPrivate.h
@@ -121,7 +116,6 @@ target_link_libraries(mumlib PRIVATE Boost::boost Boost::system)
 target_link_libraries(mumlib PRIVATE OpenSSL::SSL)
 target_link_libraries(mumlib PRIVATE Opus::opus)
 target_link_libraries(mumlib PRIVATE protobuf::libprotobuf)
-target_link_libraries(mumlib PRIVATE SpeexDSP::SpeexDSP)
 if(WIN32)
     target_link_libraries(mumlib PUBLIC Crypt32)
 endif()
