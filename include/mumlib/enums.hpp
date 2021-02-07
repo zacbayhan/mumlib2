@@ -1,5 +1,8 @@
 #pragma once
 
+//stdlib
+#include <cstdint>
+
 namespace mumlib {
     enum class MessageType {
         VERSION = 0,
@@ -31,18 +34,41 @@ namespace mumlib {
     };
 
     enum class ConnectionState {
-        NOT_CONNECTED,
-        IN_PROGRESS,
-        CONNECTED,
-        FAILED
+        NOT_CONNECTED = 0, 
+        IN_PROGRESS = 1,
+        CONNECTED = 2,
+        DISCONNECTING = 3,
+        FAILED = 4
     };
 
-    enum class AudioPacketType {
-        CELT_Alpha,
-        Ping,
-        Speex,
-        CELT_Beta,
-        OPUS
+	enum class AudioPacketType : uint8_t {
+		CeltAplha = 0b00000000,
+		Ping      = 0b00100000,
+		Speex     = 0b01000000,
+        CeltBeta  = 0b01100000,
+        Opus      = 0b10000000,
+	};
+
+    enum class UserState {
+        MUTE,
+        DEAF,
+        SUPPRESS,
+        SELF_MUTE,
+        SELF_DEAF,
+        COMMENT,
+        PRIORITY_SPEAKER,
+        RECORDING
+    };
+
+    enum class VoiceTargetType {
+        CHANNEL,
+        USER
+    };
+
+    enum class PingState {
+        PING,
+        PONG,
+        NONE
     };
 
 }

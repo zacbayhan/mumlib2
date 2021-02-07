@@ -30,13 +30,13 @@
 
 #pragma once
 
+//openssl
 #include <openssl/aes.h>
-#include <boost/noncopyable.hpp>
 
 namespace mumlib {
 
-    class CryptState : boost::noncopyable {
-    public:
+    class CryptState {
+    private:
         unsigned char raw_key[AES_BLOCK_SIZE];
         unsigned char encrypt_iv[AES_BLOCK_SIZE];
         unsigned char decrypt_iv[AES_BLOCK_SIZE];
@@ -56,13 +56,22 @@ namespace mumlib {
         AES_KEY decrypt_key;
         bool bInit;
 
+    public:
+        //mark as non-copyable
+        CryptState(const CryptState&) = delete;
+        CryptState& operator=(const CryptState&) = delete;
+
         CryptState();
 
         bool isValid() const;
 
+        void genKey();
+
         void setKey(const unsigned char *rkey, const unsigned char *eiv, const unsigned char *div);
 
         void setDecryptIV(const unsigned char *iv);
+
+        const unsigned char* getEncryptIV() const;
 
         void ocb_encrypt(const unsigned char *plain, unsigned char *encrypted, unsigned int len,
                          const unsigned char *nonce,

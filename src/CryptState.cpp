@@ -37,11 +37,16 @@
  * OCB with something else or get yourself a license.
  */
 
-
-#include "mumlib/CryptState.hpp"
-
-#include <cstring>
+//stdlib
 #include <cstdint>
+#include <cstring>
+
+//openssl
+#include <openssl/rand.h>
+
+//mumlib
+#include "mumlib_private/CryptState.hpp"
+
 
 using namespace std;
 
@@ -57,6 +62,15 @@ bool mumlib::CryptState::isValid() const {
     return bInit;
 }
 
+void mumlib::CryptState::genKey() {
+	RAND_bytes(raw_key, AES_BLOCK_SIZE);
+	RAND_bytes(encrypt_iv, AES_BLOCK_SIZE);
+	RAND_bytes(decrypt_iv, AES_BLOCK_SIZE);
+	AES_set_encrypt_key(raw_key, 128, &encrypt_key);
+	AES_set_decrypt_key(raw_key, 128, &decrypt_key);
+	bInit = true;
+}
+
 void mumlib::CryptState::setKey(const unsigned char *rkey, const unsigned char *eiv, const unsigned char *div) {
     memcpy(raw_key, rkey, AES_BLOCK_SIZE);
     memcpy(encrypt_iv, eiv, AES_BLOCK_SIZE);
@@ -68,6 +82,10 @@ void mumlib::CryptState::setKey(const unsigned char *rkey, const unsigned char *
 
 void mumlib::CryptState::setDecryptIV(const unsigned char *iv) {
     memcpy(decrypt_iv, iv, AES_BLOCK_SIZE);
+}
+
+const unsigned char* mumlib::CryptState::getEncryptIV() const {
+	return encrypt_iv;
 }
 
 void mumlib::CryptState::encrypt(const unsigned char *source, unsigned char *dst, unsigned int plain_length) {
@@ -181,7 +199,11 @@ bool mumlib::CryptState::decrypt(const unsigned char *source, unsigned char *dst
 #define SHIFTBITS 63
 typedef uint64_t subblock;
 
-#define SWAP64(x) (__builtin_bswap64(x))
+#ifdef _MSC_VER
+    #define SWAP64(x) (_byteswap_uint64(x))
+#else
+    #define SWAP64(x) (__builtin_bswap64(x))
+#endif
 #define SWAPPED(x) SWAP64(x)
 
 typedef subblock keyblock[BLOCKSIZE];
