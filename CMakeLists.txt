@@ -190,7 +190,7 @@ install(
         "${CMAKE_INSTALL_CMAKEDIR}"
 )
 
-if(MSVC)
+if(MSVC AND MUMLIB2_LIBRARY_TYPE STREQUAL "SHARED")
     install(
         FILES "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:$<TARGET_PDB_FILE:mumlib2>>"
         DESTINATION "bin"
