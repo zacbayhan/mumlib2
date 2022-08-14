@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
+
 #pragma once
 
 //stdlib
@@ -10,10 +13,10 @@
 #include <opus/opus.h>
 
 //mumlib
-#include "mumlib/Logger.hpp"
-#include "mumlib_private/AudioPacket.hpp"
+#include "mumlib2/logger.h"
+#include "mumlib2_private/audio_packet.h"
 
-namespace mumlib {
+namespace mumlib2 {
     class AudioDecoderSession {
     public:
         //mark as non-copyable

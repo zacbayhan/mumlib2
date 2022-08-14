@@ -1,38 +1,38 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
+
 #pragma once
 
 //stdlib
+#include <array>
 #include <chrono>
 #include <functional>
 #include <optional>
 #include <string>
+#include <system_error>
 #include <utility>
 #include <vector>
 
 //boost
-#include <boost/noncopyable.hpp>
-#include <boost/asio/ssl.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/pool/pool.hpp>
+#include <asio.hpp>
+#include <asio/ssl.hpp>
 
 //protobuf
 #include <google/protobuf/message.h>
 
 //mumlib
-#include "mumlib/Constants.hpp"
-#include "mumlib/Enums.hpp"
-#include "mumlib/Logger.hpp"
-#include "mumlib_private/AudioPacket.hpp"
-#include "mumlib_private/CryptState.hpp"
-#include "mumlib_private/SslContextHelper.h"
-#include "mumlib_private/VarInt.hpp"
+#include "mumlib2/constants.h"
+#include "mumlib2/enums.h"
+#include "mumlib2/logger.h"
+#include "mumlib2_private/audio_packet.h"
+#include "mumlib2_private/crypto_state.h"
+#include "mumlib2_private/transport_ssl_context.h"
+#include "mumlib2_private/varint.h"
 
 
-namespace mumlib {
-    using namespace boost::asio;
-    using namespace boost::asio::ip;
+namespace mumlib2 {
 
-    class Transport : boost::noncopyable {
+    class Transport {
     public:
         Transport(
                   std::function<bool(MessageType, uint8_t*, int)> processControlMessageFunc,
@@ -41,6 +41,9 @@ namespace mumlib {
                   std::string privkey_file = "");
 
         ~Transport();
+
+        Transport(const Transport&) = delete;
+        Transport& operator=(const Transport&) = delete;
 
         void connect(const std::string& host, int port, const std::string& user, const std::string& password);
 
@@ -65,7 +68,7 @@ namespace mumlib {
     private:
         Logger logger;
 
-        boost::asio::io_service ioService;
+        asio::io_service ioService;
 
         std::pair<std::string, int> connectionParams;
 
@@ -80,26 +83,25 @@ namespace mumlib {
         ConnectionState state = ConnectionState::NOT_CONNECTED;
         PingState ping_state = PingState::NONE;
 
-        udp::socket udpSocket;
-        ip::udp::endpoint udpReceiverEndpoint;
+        asio::ip::udp::socket udpSocket;
+        asio::ip::udp::endpoint udpReceiverEndpoint;
         uint8_t udpIncomingBuffer[MUMBLE_UDP_MAXLENGTH];
         CryptState cryptState;
 
-        ssl::context sslContext;
+        asio::ssl::context sslContext;
         SslContextHelper sslContextHelper;
-        ssl::stream<tcp::socket> sslSocket;
-        uint8_t *sslIncomingBuffer;
+        asio::ssl::stream<asio::ip::tcp::socket> sslSocket;
+        std::array<uint8_t, MUMBLE_TCP_MAXLENGTH> sslIncomingBuffer;
 
-        deadline_timer pingTimer;
+
+        asio::steady_timer pingTimer;
         std::chrono::time_point<std::chrono::system_clock> lastReceivedUdpPacketTimestamp;
 
-        boost::pool<> asyncBufferPool;
+        void pingTimerTick(const std::error_code &e);
 
-        void pingTimerTick(const boost::system::error_code &e);
+        void sslConnectHandler(const std::error_code &error);
 
-        void sslConnectHandler(const boost::system::error_code &error);
-
-        void sslHandshakeHandler(const boost::system::error_code &error);
+        void sslHandshakeHandler(const std::error_code &error);
 
         void doReceiveSsl();
 

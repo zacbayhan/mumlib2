@@ -1,9 +1,12 @@
-//mumlib
-#include "mumlib/Constants.hpp"
-#include "mumlib/Exceptions.hpp"
-#include "mumlib_private/AudioDecoderSession.hpp"
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
 
-namespace mumlib {
+//mumlib
+#include "mumlib2/constants.h"
+#include "mumlib2/exceptions.h"
+#include "mumlib2_private/audio_decoder_session.h"
+
+namespace mumlib2 {
 	AudioDecoderSession::AudioDecoderSession(int32_t session_id, uint32_t channels)
 	{
 		_session_id = session_id;
@@ -40,7 +43,7 @@ namespace mumlib {
 			throw AudioDecoderException("opusDecode: no decoder");
 		}
 
-		return opus_decode(_opus, in_data, in_len, _opus_output_buf.data(), _opus_output_buf.size(), 0);
+		return opus_decode(_opus, in_data, in_len, _opus_output_buf.data(), static_cast<int>(_opus_output_buf.size()), 0);
 	}
 
 	void AudioDecoderSession::opusDestroy()

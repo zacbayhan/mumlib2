@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
+
 #pragma once
 
 //stdlib
@@ -5,11 +8,14 @@
 #include <string>
 #include <vector>
 
-namespace mumlib {
+//mumlib2
+#include "mumlib2/Export.h"
+
+namespace mumlib2 {
 
     using namespace std;
 
-    class Callback {
+    class MUMLIB2_EXPORT Callback {
     public:
         virtual void version(
                 uint16_t major,

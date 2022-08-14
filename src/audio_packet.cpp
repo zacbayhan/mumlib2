@@ -1,8 +1,11 @@
-#include "mumlib/Exceptions.hpp"
-#include "mumlib_private/AudioPacket.hpp"
-#include "mumlib_private/VarInt.hpp"
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
 
-namespace mumlib {
+#include "mumlib2/exceptions.h"
+#include "mumlib2_private/audio_packet.h"
+#include "mumlib2_private/varint.h"
+
+namespace mumlib2 {
 
     //
     // Ctor

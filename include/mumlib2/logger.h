@@ -1,11 +1,17 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
+
 #pragma once
 
 //stdlib
 #include <string>
 #include <sstream>
 
-namespace mumlib {
-	class Logger {
+// mumlib2
+#include "mumlib2/export.h"
+
+namespace mumlib2 {
+	class MUMLIB2_EXPORT Logger {
 	public:
 		Logger() {};
 		Logger(const std::string&) {};

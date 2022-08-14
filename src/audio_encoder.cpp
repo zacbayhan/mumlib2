@@ -1,15 +1,12 @@
 //stdlib
 #include <array>
 
-//boost
-#include <boost/format.hpp>
-
 //mumlib
-#include "mumlib/Constants.hpp"
-#include "mumlib/Exceptions.hpp"
-#include "mumlib_private/AudioEncoder.hpp"
+#include "mumlib2/constants.h"
+#include "mumlib2/exceptions.h"
+#include "mumlib2_private/audio_encoder.h"
 
-namespace mumlib {
+namespace mumlib2 {
 
     //
     // Ctor/Dtor
@@ -33,10 +30,10 @@ namespace mumlib {
     {
         destroyOpus();
 
-        int error = 0;
-        _encoder = opus_encoder_create(MUMBLE_AUDIO_SAMPLERATE, _channels, OPUS_APPLICATION_VOIP, &error);
-        if (error != OPUS_OK) {
-            throw AudioEncoderException((boost::format("failed to initialize OPUS encoder: %s") % opus_strerror(error)).str());
+        int status = 0;
+        _encoder = opus_encoder_create(MUMBLE_AUDIO_SAMPLERATE, _channels, OPUS_APPLICATION_VOIP, &status);
+        if (status != OPUS_OK) {
+            throw AudioEncoderException(std::string("failed to initialize OPUS encoder: ") + opus_strerror(status));
         }
     }
 
@@ -55,7 +52,7 @@ namespace mumlib {
 
         int status = opus_encoder_ctl(_encoder, OPUS_RESET_STATE, nullptr);
         if (status != OPUS_OK) {
-            throw AudioEncoderException((boost::format("failed to reset encoder: %s") % opus_strerror(status)).str());
+            throw AudioEncoderException(std::string("failed to reset OPUS encoder: ") + opus_strerror(status));
         }
 
         _sequence_number = 0;
@@ -71,13 +68,12 @@ namespace mumlib {
 
         int error = opus_encoder_ctl(_encoder, OPUS_SET_VBR(0));
         if (error != OPUS_OK) {
-            throw AudioEncoderException((boost::format("failed to initialize variable bitrate: %s") % opus_strerror(error)).str());
+            throw AudioEncoderException(std::string("failed to initialize variable bitrate:") + opus_strerror(error));
         }
 
         error = opus_encoder_ctl(_encoder, OPUS_SET_BITRATE(bitrate));
         if (error != OPUS_OK) {
-            throw AudioEncoderException((boost::format("failed to initialize transmission bitrate to %d B/s: %s")
-                % bitrate % opus_strerror(error)).str());
+            throw AudioEncoderException(std::string("failed to initialize transmission bitrate:") + opus_strerror(error));
         }
     }
 
@@ -104,7 +100,7 @@ namespace mumlib {
             );
 
             if (out_len <= 0) {
-                throw AudioEncoderException((boost::format("failed to encode %d B of PCM data: %s") % in_len % opus_strerror(out_len)).str());
+                throw AudioEncoderException(std::string("failed to encode PCM data: %s") + opus_strerror(out_len));
             }
         }
 

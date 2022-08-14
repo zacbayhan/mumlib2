@@ -1,7 +1,11 @@
-#include "mumlib/Exceptions.hpp"
-#include "mumlib_private/VarInt.hpp"
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
 
-namespace mumlib {
+// mumlib
+#include "mumlib2/exceptions.h"
+#include "mumlib2_private/varint.h"
+
+namespace mumlib2 {
     VarInt::VarInt(const uint8_t* buf)
     {
         parse(buf);

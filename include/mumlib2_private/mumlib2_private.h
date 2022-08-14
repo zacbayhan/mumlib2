@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
+
 #pragma once
 
 //stdlib
@@ -8,22 +11,22 @@
 #include <vector>
 
 //mumlib
-#include "mumlib/Callback.hpp"
-#include "mumlib/Constants.hpp"
-#include "mumlib/Structs.hpp"
-#include "mumlib_private/AudioDecoder.hpp"
-#include "mumlib_private/AudioEncoder.hpp"
-#include "mumlib_private/Transport.hpp"
-#include "Mumble.pb.h"
+#include "mumlib2/callback.h"
+#include "mumlib2/constants.h"
+#include "mumlib2/structs.h"
+#include "mumlib2_private/audio_decoder.h"
+#include "mumlib2_private/audio_encoder.h"
+#include "mumlib2_private/transport.h"
+#include "mumble.pb.h"
 
-namespace mumlib {
-    class MumlibPrivate {
+namespace mumlib2 {
+    class Mumlib2Private {
     public:
         //mark as non-copyable
-        MumlibPrivate(const MumlibPrivate&) = delete;
-        MumlibPrivate& operator=(const MumlibPrivate&) = delete;
+        Mumlib2Private(const Mumlib2Private&) = delete;
+        Mumlib2Private& operator=(const Mumlib2Private&) = delete;
 
-        MumlibPrivate(Callback& callback);
+        Mumlib2Private(Callback& callback);
 
         //Audio
         void AudioSend(const int16_t* pcmData, int pcmLength);

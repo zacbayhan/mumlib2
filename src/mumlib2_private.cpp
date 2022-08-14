@@ -1,10 +1,13 @@
-//mumlib
-#include "mumlib/Constants.hpp"
-#include "mumlib/Exceptions.hpp"
-#include "mumlib_private/MumlibPrivate.h"
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
 
-namespace mumlib {
-	MumlibPrivate::MumlibPrivate(Callback& callback) : _callback(callback)
+//mumlib
+#include "mumlib2/constants.h"
+#include "mumlib2/exceptions.h"
+#include "mumlib2_private/mumlib2_private.h"
+
+namespace mumlib2 {
+	Mumlib2Private::Mumlib2Private(Callback& callback) : _callback(callback)
 	{
 		audioDecoderCreate(MUMBLE_AUDIO_SAMPLERATE);
         audioEncoderCreate(MUMBLE_AUDIO_SAMPLERATE, MUMBLE_OPUS_BITRATE);
@@ -13,7 +16,7 @@ namespace mumlib {
     //
     // ACL
     //
-    bool MumlibPrivate::AclSetTokens(const std::vector<std::string>& tokens)
+    bool Mumlib2Private::AclSetTokens(const std::vector<std::string>& tokens)
     {
         bool result = false;
 
@@ -29,7 +32,7 @@ namespace mumlib {
 	// Audio
 	//
 
-    void MumlibPrivate::AudioSend(const int16_t* pcmData, int pcmLength)
+    void Mumlib2Private::AudioSend(const int16_t* pcmData, int pcmLength)
     {
         //check buffer
         if (!pcmData || !pcmLength) {
@@ -39,7 +42,7 @@ namespace mumlib {
         AudioSendTarget(pcmData, pcmLength, 0);
     }
 
-    void MumlibPrivate::AudioSendTarget(const int16_t* pcmData, int pcmLength, uint32_t target)
+    void Mumlib2Private::AudioSendTarget(const int16_t* pcmData, int pcmLength, uint32_t target)
     {
         //check buffer
         if (!pcmData || !pcmLength) {
@@ -61,12 +64,12 @@ namespace mumlib {
         catch (const TransportException&) {}
     }
 
-    void MumlibPrivate::audioDecoderCreate(uint32_t output_samplerate)
+    void Mumlib2Private::audioDecoderCreate(uint32_t output_samplerate)
     {
         _audio_decoder = std::make_unique<AudioDecoder>(MUMBLE_AUDIO_CHANNELS);
     }
 
-    void MumlibPrivate::audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate)
+    void Mumlib2Private::audioEncoderCreate(uint32_t input_samplerate, uint32_t output_bitrate)
     {
         _audio_encoder = std::make_unique<AudioEncoder>(output_bitrate);
     }
@@ -74,22 +77,22 @@ namespace mumlib {
     //
     // Channel
     //
-    uint32_t MumlibPrivate::ChannelGetCurrent() const
+    uint32_t Mumlib2Private::ChannelGetCurrent() const
     {
         return _channel_current;
     }
 
-    std::vector<MumbleChannel> MumlibPrivate::ChannelGetList() const
+    std::vector<MumbleChannel> Mumlib2Private::ChannelGetList() const
     {
         return _channel_list;
     }
 
-    void MumlibPrivate::channelEmplace(MumbleChannel& channel)
+    void Mumlib2Private::channelEmplace(MumbleChannel& channel)
     {
         _channel_list.push_back(channel);
     }
 
-    bool MumlibPrivate::ChannelExists(uint32_t channel_id) const
+    bool Mumlib2Private::ChannelExists(uint32_t channel_id) const
     {
         for (auto& channel : _channel_list) {
             if (channel.channelId == channel_id) {
@@ -100,7 +103,7 @@ namespace mumlib {
         return false;
     }
 
-    void MumlibPrivate::channelErase(uint32_t channel_id)
+    void Mumlib2Private::channelErase(uint32_t channel_id)
     {
         for (int i = 0; i < _channel_list.size(); i++) {
             if (_channel_list[i].channelId == channel_id) {
@@ -110,7 +113,7 @@ namespace mumlib {
         }
     }
 
-    bool MumlibPrivate::ChannelJoin(uint32_t channel_id)
+    bool Mumlib2Private::ChannelJoin(uint32_t channel_id)
     {
         if (!ChannelExists(channel_id)) {
             return false;
@@ -126,7 +129,7 @@ namespace mumlib {
         return true;
     }
 
-    int32_t MumlibPrivate::ChannelFind(const std::string& channel_name) const
+    int32_t Mumlib2Private::ChannelFind(const std::string& channel_name) const
     {
         for (auto& channel : _channel_list) {
             if (channel.name == channel_name) {
@@ -137,7 +140,7 @@ namespace mumlib {
         return -1;
     }
 
-    void MumlibPrivate::channelSet(uint32_t channel_id)
+    void Mumlib2Private::channelSet(uint32_t channel_id)
     {
         _channel_current = channel_id;
     }
@@ -145,7 +148,7 @@ namespace mumlib {
     //
     // General
     //
-    void MumlibPrivate::generalClear()
+    void Mumlib2Private::generalClear()
     {
         _session_id = 0;
 
@@ -164,22 +167,22 @@ namespace mumlib {
 	//
 	// Processing
 	//
-    bool MumlibPrivate::processControlPacket(MessageType messageType, const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlPacket(MessageType messageType, const uint8_t* buffer, int length)
     {
         switch (messageType) {
         case MessageType::VERSION:
             return processControlVersionPacket(buffer, length);
         case MessageType::UDPTUNNEL:
-            _logger.warn("MumlibPrivate::processControlPacket() -> UDPTUNNEL not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> UDPTUNNEL not implemented");
             break;
         case MessageType::AUTHENTICATE:
-            _logger.warn("MumlibPrivate::processControlPacket() -> AUTHENTICATE not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> AUTHENTICATE not implemented");
             break;
         case MessageType::PING:
-            _logger.warn("MumlibPrivate::processControlPacket() -> PING not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> PING not implemented");
             break;
         case MessageType::REJECT:
-            _logger.warn("MumlibPrivate::processControlPacket() -> PING not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> PING not implemented");
             break;
         case MessageType::SERVERSYNC:
             return processControlServersyncPacket(buffer, length);
@@ -196,52 +199,52 @@ namespace mumlib {
         case MessageType::TEXTMESSAGE:
             return processControlTextMessagePacket(buffer, length);
         case MessageType::PERMISSIONDENIED:
-            _logger.warn("MumlibPrivate::processControlPacket() -> PERMISSIONDENIED not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> PERMISSIONDENIED not implemented");
             break;
         case MessageType::ACL:
-            _logger.warn("MumlibPrivate::processControlPacket() -> ACL not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> ACL not implemented");
             break;
         case MessageType::QUERYUSERS:
-            _logger.warn("MumlibPrivate::processControlPacket() -> QUERYUSERS not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> QUERYUSERS not implemented");
             break;
         case MessageType::CRYPTSETUP:
-            _logger.warn("MumlibPrivate::processControlPacket() -> CRYPTSETUP not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> CRYPTSETUP not implemented");
             break;
         case MessageType::CONTEXTACTIONMODIFY:
-            _logger.warn("MumlibPrivate::processControlPacket() -> CONTEXTACTIONMODIFY not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> CONTEXTACTIONMODIFY not implemented");
             break;
         case MessageType::CONTEXTACTION:
-            _logger.warn("MumlibPrivate::processControlPacket() -> CONTEXTACTION not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> CONTEXTACTION not implemented");
             break;
         case MessageType::USERLIST:
-            _logger.warn("MumlibPrivate::processControlPacket() -> USERLIST not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> USERLIST not implemented");
             break;
         case MessageType::VOICETARGET:
-            _logger.warn("MumlibPrivate::processControlPacket() -> VOICETARGET not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> VOICETARGET not implemented");
             break;
         case MessageType::PERMISSIONQUERY:
             return processControlPermissionQueryPacket(buffer, length);
         case MessageType::CODECVERSION:
             return processControlCodecVersionPacket(buffer, length);
         case MessageType::USERSTATS:
-            _logger.warn("MumlibPrivate::processControlPacket() -> USERSTATS not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> USERSTATS not implemented");
             break;
         case MessageType::REQUESTBLOB:
-            _logger.warn("MumlibPrivate::processControlPacket() -> REQUESTBLOB not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> REQUESTBLOB not implemented");
             break;
         case MessageType::SERVERCONFIG:
             return processControlServerconfigPacket(buffer, length);
         case MessageType::SUGGESTCONFIG:
-            _logger.warn("MumlibPrivate::processControlPacket() -> SUGGESTCONFIG not implemented");
+            _logger.warn("Mumlib2Private::processControlPacket() -> SUGGESTCONFIG not implemented");
             break;
         default:
-            throw MumlibException("MumlibPrivate::processControlPacket() -> unknown message type: " + to_string(static_cast<int>(messageType)));
+            throw Mumlib2Exception("Mumlib2Private::processControlPacket() -> unknown message type: " + to_string(static_cast<int>(messageType)));
         }
 
         return false;
     }
 
-    bool MumlibPrivate::processControlBanlistPacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlBanlistPacket(const uint8_t* buffer, int length)
     {
         MumbleProto::BanList ban_list;
         ban_list.ParseFromArray(buffer, length);
@@ -249,8 +252,8 @@ namespace mumlib {
             auto ban = ban_list.bans(i);
 
             const uint8_t* ip_data = reinterpret_cast<const uint8_t*>(ban.address().c_str());
-            uint32_t ip_data_size = ban.address().size();
-            int32_t duration = ban.has_duration() ? ban.duration() : -1;
+            auto ip_data_size = ban.address().size();
+            auto duration = ban.has_duration() ? ban.duration() : -1;
 
             _callback.banList(
                 ip_data,
@@ -266,7 +269,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlChannelremovePacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlChannelremovePacket(const uint8_t* buffer, int length)
     {
         MumbleProto::ChannelRemove channelRemove;
         channelRemove.ParseFromArray(buffer, length);
@@ -279,7 +282,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlChannelstatePacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlChannelstatePacket(const uint8_t* buffer, int length)
     {
         MumbleProto::ChannelState channelState;
         channelState.ParseFromArray(buffer, length);
@@ -329,7 +332,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlCodecVersionPacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlCodecVersionPacket(const uint8_t* buffer, int length)
     {
         MumbleProto::CodecVersion codecVersion;
         codecVersion.ParseFromArray(buffer, length);
@@ -344,7 +347,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlPermissionQueryPacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlPermissionQueryPacket(const uint8_t* buffer, int length)
     {
         MumbleProto::PermissionQuery permissionQuery;
         permissionQuery.ParseFromArray(buffer, length);
@@ -358,7 +361,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlTextMessagePacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlTextMessagePacket(const uint8_t* buffer, int length)
     {
         MumbleProto::TextMessage text_message;
         text_message.ParseFromArray(buffer, length);
@@ -385,7 +388,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlVersionPacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlVersionPacket(const uint8_t* buffer, int length)
     {
         MumbleProto::Version version;
         version.ParseFromArray(buffer, length);
@@ -400,7 +403,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlUserRemovePacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlUserRemovePacket(const uint8_t* buffer, int length)
     {
         MumbleProto::UserRemove user_remove;
         user_remove.ParseFromArray(buffer, length);
@@ -422,7 +425,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlUserStatePacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlUserStatePacket(const uint8_t* buffer, int length)
     {
         MumbleProto::UserState userState;
         userState.ParseFromArray(buffer, length);
@@ -471,7 +474,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlServerconfigPacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlServerconfigPacket(const uint8_t* buffer, int length)
     {
         MumbleProto::ServerConfig serverConfig;
         serverConfig.ParseFromArray(buffer, length);
@@ -492,7 +495,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::processControlServersyncPacket(const uint8_t* buffer, int length)
+    bool Mumlib2Private::processControlServersyncPacket(const uint8_t* buffer, int length)
     {
         MumbleProto::ServerSync serverSync;
         serverSync.ParseFromArray(buffer, length);
@@ -509,7 +512,7 @@ namespace mumlib {
         return true;
     }
 
-	bool MumlibPrivate::processAudioPacket(AudioPacket& packet)
+	bool Mumlib2Private::processAudioPacket(AudioPacket& packet)
 	{
         //check for mute
         if (UserMuted(packet.GetAudioSessionId())) {
@@ -531,7 +534,7 @@ namespace mumlib {
             //TODO: callback for ping
         }
         else {
-            _logger.warn("MumlibPrivate::processAudioPacket() -> codec not implemented");
+            _logger.warn("Mumlib2Private::processAudioPacket() -> codec not implemented");
             _callback.unsupportedAudio(
                 packet.GetHeaderTarget(),
                 packet.GetAudioSessionId(),
@@ -548,7 +551,7 @@ namespace mumlib {
     // User
     //
 
-    std::optional<MumbleUser> MumlibPrivate::UserGet(int32_t session_id)
+    std::optional<MumbleUser> Mumlib2Private::UserGet(int32_t session_id)
     {
         if (_user_map.contains(session_id)) {
             return { _user_map[session_id] };
@@ -557,7 +560,7 @@ namespace mumlib {
         return {};
     }
 
-    std::vector<MumbleUser> MumlibPrivate::UserGetList() const
+    std::vector<MumbleUser> Mumlib2Private::UserGetList() const
     {
         std::vector<MumbleUser> result;
         for (const auto& user : _user_map) {
@@ -566,7 +569,7 @@ namespace mumlib {
         return result;
     }
 
-    std::vector<MumbleUser> MumlibPrivate::UserGetInChannel(int32_t channel_id) const
+    std::vector<MumbleUser> Mumlib2Private::UserGetInChannel(int32_t channel_id) const
     {
         std::vector<MumbleUser> result;
         for (const auto& user : _user_map) {
@@ -577,12 +580,12 @@ namespace mumlib {
         return result;
     }
 
-    bool MumlibPrivate::UserExists(uint32_t user_id) const
+    bool Mumlib2Private::UserExists(uint32_t user_id) const
     {
         return _user_map.contains(user_id);
     }
 
-    bool MumlibPrivate::UserMuted(int32_t user_id)
+    bool Mumlib2Private::UserMuted(int32_t user_id)
     {
         if (!_user_map.contains(user_id)) {
             return false;
@@ -591,7 +594,7 @@ namespace mumlib {
         return _user_map[user_id].local_mute;
     }
 
-    void MumlibPrivate::userUpdate(MumbleUser& user)
+    void Mumlib2Private::userUpdate(MumbleUser& user)
     {
         //name could be skipped on second trasmission
         //local muted state must be copied
@@ -603,19 +606,19 @@ namespace mumlib {
         _user_map[user.sessionId] = user;
     }
 
-    void MumlibPrivate::userClear()
+    void Mumlib2Private::userClear()
     {
         _user_map.clear();
     }
 
-    void MumlibPrivate::userErase(uint32_t user_id)
+    void Mumlib2Private::userErase(uint32_t user_id)
     {
         if (_user_map.contains(user_id)) {
             _user_map.erase(user_id);
         }
     }
 
-    int32_t MumlibPrivate::UserFind(const std::string& user_name) const
+    int32_t Mumlib2Private::UserFind(const std::string& user_name) const
     {
         for (auto& user : _user_map) {
             if (user.second.name == user_name) {
@@ -626,7 +629,7 @@ namespace mumlib {
         return -1;
     }
 
-    bool MumlibPrivate::UserMute(int32_t user_id, bool mute_state)
+    bool Mumlib2Private::UserMute(int32_t user_id, bool mute_state)
     {
         if (!_user_map.contains(user_id)) {
             return false;
@@ -636,7 +639,7 @@ namespace mumlib {
         return true;;
     }
 
-    bool MumlibPrivate::UserSendState(UserState field, bool val)
+    bool Mumlib2Private::UserSendState(UserState field, bool val)
     {
         MumbleProto::UserState userState;
 
@@ -674,7 +677,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::UserSendState(UserState field, const std::string& val)
+    bool Mumlib2Private::UserSendState(UserState field, const std::string& val)
     {
         MumbleProto::UserState userState;
 
@@ -712,7 +715,7 @@ namespace mumlib {
     // Session
     //
 
-    uint32_t MumlibPrivate::sessionGet() const
+    uint32_t Mumlib2Private::sessionGet() const
     {
         return _session_id;
     }
@@ -721,7 +724,7 @@ namespace mumlib {
     //
     // Text
     //
-    bool MumlibPrivate::TextSend(const std::string& message)
+    bool Mumlib2Private::TextSend(const std::string& message)
     {
         MumbleProto::TextMessage textMessage;
         textMessage.set_actor(sessionGet());
@@ -739,7 +742,7 @@ namespace mumlib {
 	//
 	// Transport
 	//
-	bool MumlibPrivate::TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password)
+	bool Mumlib2Private::TransportConnect(const std::string& host, uint16_t port, const std::string& user, const std::string& password)
 	{
         if (TransportGetState() == ConnectionState::CONNECTED ||
             TransportGetState() == ConnectionState::IN_PROGRESS ||
@@ -756,7 +759,7 @@ namespace mumlib {
         return true;
 	}
 
-	void MumlibPrivate::TransportDisconnect()
+	void Mumlib2Private::TransportDisconnect()
 	{
 		if (_transport) {
 			_transport->disconnect();
@@ -766,7 +769,7 @@ namespace mumlib {
         generalClear();
 	}
 
-	ConnectionState MumlibPrivate::TransportGetState() const
+	ConnectionState Mumlib2Private::TransportGetState() const
 	{
 		if (!_transport) {
 			return ConnectionState::NOT_CONNECTED;
@@ -775,31 +778,31 @@ namespace mumlib {
 		return _transport->getConnectionState();
 	}
 
-	void MumlibPrivate::TransportRun()
+	void Mumlib2Private::TransportRun()
 	{
 		_transport->run();
 	}
 
-	void MumlibPrivate::TransportSetCert(const std::string& cert)
+	void Mumlib2Private::TransportSetCert(const std::string& cert)
 	{
 		_transport_cert = cert;
 	}
 
-	void MumlibPrivate::TransportSetKey(const std::string& key)
+	void Mumlib2Private::TransportSetKey(const std::string& key)
 	{
 		_transport_key = key;
 	}
 
-	void MumlibPrivate::transportCreate()
+	void Mumlib2Private::transportCreate()
 	{
 		_transport = std::make_unique<Transport>(
-			boost::bind(&MumlibPrivate::processControlPacket, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3),
-			boost::bind(&MumlibPrivate::processAudioPacket, this, boost::placeholders::_1),
+			std::bind(&Mumlib2Private::processControlPacket, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+			std::bind(&Mumlib2Private::processAudioPacket, this, std::placeholders::_1),
 			_transport_cert,
 			_transport_key);
 	}
 
-    bool MumlibPrivate::transportSendAuthentication(const std::vector<std::string>& tokens)
+    bool Mumlib2Private::transportSendAuthentication(const std::vector<std::string>& tokens)
     {
         if (!_transport) {
             return false;
@@ -809,7 +812,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::transportSendControl(MessageType type, google::protobuf::Message& message)
+    bool Mumlib2Private::transportSendControl(MessageType type, google::protobuf::Message& message)
     {
         if (!_transport) {
             return false;
@@ -819,7 +822,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::transportSendAudio(const uint8_t* data, size_t len)
+    bool Mumlib2Private::transportSendAudio(const uint8_t* data, size_t len)
     {
         if (!_transport) {
             return false;
@@ -833,7 +836,7 @@ namespace mumlib {
     // Voicetarget
     //
 
-    bool MumlibPrivate::VoicetargetSet(int targetId, VoiceTargetType type, int id)
+    bool Mumlib2Private::VoicetargetSet(int targetId, VoiceTargetType type, int id)
     {
         MumbleProto::VoiceTarget_Target voiceTargetTarget;
         
@@ -857,7 +860,7 @@ namespace mumlib {
         return true;
     }
 
-    bool MumlibPrivate::VoicetargetSet(int targetId, VoiceTargetType type, const std::string& name)
+    bool Mumlib2Private::VoicetargetSet(int targetId, VoiceTargetType type, const std::string& name)
     {
         int id = -1;
         switch (type) {

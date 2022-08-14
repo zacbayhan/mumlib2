@@ -1,15 +1,16 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
+
 //stdlib
 #include <array>
-
-//boost
-#include <boost/format.hpp>
+#include <chrono>
 
 //mumlib
-#include "mumlib/Constants.hpp"
-#include "mumlib/Exceptions.hpp"
-#include "mumlib_private/AudioDecoder.hpp"
+#include "mumlib2/constants.h"
+#include "mumlib2/exceptions.h"
+#include "mumlib2_private/audio_decoder.h"
 
-namespace mumlib {
+namespace mumlib2 {
 
     //
     // Ctor/Dtor

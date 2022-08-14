@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2015-2022 mumlib2 contributors
+
 #pragma once
 
 //stdlib
@@ -8,26 +11,27 @@
 #include <vector>
 
 //mumlib
-#include "mumlib/Callback.hpp"
-#include "mumlib/Constants.hpp"
-#include "mumlib/Enums.hpp"
-#include "mumlib/Exceptions.hpp"
-#include "mumlib/Logger.hpp"
-#include "mumlib/Structs.hpp"
+#include "mumlib2/callback.h"
+#include "mumlib2/constants.h"
+#include "mumlib2/enums.h"
+#include "mumlib2/export.h"
+#include "mumlib2/exceptions.h"
+#include "mumlib2/logger.h"
+#include "mumlib2/structs.h"
 
-namespace mumlib {
+namespace mumlib2 {
 
-    class MumlibPrivate;
+    class Mumlib2Private;
 
-    class Mumlib {
+    class MUMLIB2_EXPORT Mumlib2 {
     public:
         //mark as non-copyable
-        Mumlib(const Mumlib&) = delete;
-        Mumlib& operator=(const Mumlib&) = delete;
+        Mumlib2(const Mumlib2&) = delete;
+        Mumlib2& operator=(const Mumlib2&) = delete;
 
-        explicit Mumlib(Callback &callback);
+        explicit Mumlib2(Callback &callback);
 
-        virtual ~Mumlib();
+        virtual ~Mumlib2();
 
         //acl
         bool AclSetTokens(const std::vector<std::string>& tokens);
@@ -66,17 +70,17 @@ namespace mumlib {
 
         void sendTextMessage(std::string message);
 
-        void sendVoiceTarget(int targetId, mumlib::VoiceTargetType type, int sessionId);
+        void sendVoiceTarget(int targetId, VoiceTargetType type, int sessionId);
 
-        void sendVoiceTarget(int targetId, mumlib::VoiceTargetType type, std::string name, int &error);
+        void sendVoiceTarget(int targetId, VoiceTargetType type, std::string name, int &error);
 
-        void sendUserState(mumlib::UserState state, bool val);
+        void sendUserState(UserState state, bool val);
 
-        void sendUserState(mumlib::UserState state, std::string value);
+        void sendUserState(UserState state, std::string value);
 
         bool isSessionIdValid(int sessionId);
     private:
-        MumlibPrivate *impl;
+        std::unique_ptr<Mumlib2Private> impl;
 
         int getChannelIdBy(std::string channelName);
 
