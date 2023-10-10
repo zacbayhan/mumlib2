@@ -16,10 +16,10 @@ include(GNUInstallDirs)
 # Dependencies
 #
 
-find_package(asio REQUIRED)
+find_package(asio)
 find_package(Protobuf REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Opus CONFIG REQUIRED)
+find_package(Opus)
 
 
 
