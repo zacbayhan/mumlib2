@@ -4,12 +4,22 @@
 
 set(target "mumlib2")
 
-project(${target} VERSION 1.0.0 LANGUAGES CXX)
-
-set(MUMLIB2_VERSION "1.0.0")
+project(${target} LANGUAGES CXX)
 
 cmake_minimum_required(VERSION 3.13)
-project(mumlib2 LANGUAGES CXX VERSION ${MUMLIB2_VERSION})
+
+#
+# Set Version numbers
+#
+
+set(LIB_MAJOR_VERSION "1")
+set(LIB_MINOR_VERSION "0")
+set(LIB_PATCH_VERSION "0")
+
+set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
+
+project(${target} LANGUAGES CXX VERSION ${LIB_VERSION_STRING})
+
 
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
@@ -26,18 +36,17 @@ find_package(OpenSSL REQUIRED)
 find_package(Opus)
 
 
-
 #
 # Variabls
 #
 
-set(MUMLIB2_STANDALONE OFF)
+set(MUMLIB2_STANDALONE ON)
+
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     set(MUMLIB2_STANDALONE ON)
 endif()
+
 set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-
-
 
 #
 # Options
@@ -46,6 +55,7 @@ set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 if(MUMLIB2_STANDALONE AND NOT DEFINED BUILD_SHARED_LIBS)
 	set(BUILD_SHARED_LIBS ON)
 endif()
+
 option(MUMLIB2_BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)" ${BUILD_SHARED_LIBS})
 option(MUMLIB2_BUILD_EXAMPLE "Build example" ${MUMLIB2_STANDALONE})
 
@@ -71,7 +81,7 @@ protobuf_generate_cpp(MUMLIB2_SOURCES_PROTO MUMLIB2_HEADERS_PROTO "src_proto/mum
 # Library
 #
 
-add_library(mumlib2 ${MUMLIB2_LIBRARY_TYPE})
+add_library(${target} ${MUMLIB2_LIBRARY_TYPE})
 
 # Library/Sources
 set(MUMLIB2_SOURCES
@@ -107,7 +117,7 @@ set(MUMLIB2_HEADERS
     include/mumlib2_private/varint.h
 )
 
-target_sources(mumlib2 PRIVATE 
+target_sources(${target} PRIVATE 
     ${MUMLIB2_SOURCES}
     ${MUMLIB2_SOURCES_PROTO}
     ${MUMLIB2_HEADERS}
@@ -116,37 +126,39 @@ target_sources(mumlib2 PRIVATE
 
 
 if(MSVC)
-    target_compile_options(mumlib2 PUBLIC /wd4244 /wd4251 /wd6001 /wd6031 /wd6255 /wd6258 /wd6385 /wd6386 /wd6387 /wd26439 /wd26451 /wd26495 /wd26812 /wd26819)
+    target_compile_options(${target} PUBLIC /wd4244 /wd4251 /wd6001 /wd6031 /wd6255 /wd6258 /wd6385 /wd6386 /wd6387 /wd26439 /wd26451 /wd26495 /wd26812 /wd26819)
 endif()
 
 
-target_compile_definitions(mumlib2 PUBLIC _USE_MATH_DEFINES)
+target_compile_definitions(${target} PUBLIC _USE_MATH_DEFINES)
+
 if(WIN32)
-    target_compile_definitions(mumlib2 PUBLIC _WIN32_WINNT=0x0601)
-    target_compile_definitions(mumlib2 PUBLIC _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions(${target} PUBLIC _WIN32_WINNT=0x0601)
+    target_compile_definitions(${target} PUBLIC _CRT_SECURE_NO_WARNINGS)
 endif()
 
 
-target_include_directories(mumlib2 
+target_include_directories(${target}
 	PUBLIC
 		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>"
 		"$<INSTALL_INTERFACE:include>"
 )
 
-target_link_libraries(mumlib2 ${MUMLIB2_DEPS_VISIBLITY} asio::asio)
-target_link_libraries(mumlib2 ${MUMLIB2_DEPS_VISIBLITY} OpenSSL::SSL)
-target_link_libraries(mumlib2 ${MUMLIB2_DEPS_VISIBLITY} Opus::opus)
-target_link_libraries(mumlib2 ${MUMLIB2_DEPS_VISIBLITY} protobuf::libprotobuf)
+target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} asio::asio)
+target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} OpenSSL::SSL)
+target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} Opus::opus)
+target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} protobuf::libprotobuf)
+
 if(WIN32)
-    target_link_libraries(mumlib2 ${MUMLIB2_DEPS_VISIBLITY} Crypt32)
+    target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} Crypt32)
 endif()
 
 
-set_target_properties(mumlib2 PROPERTIES CXX_STANDARD 20)
-set_target_properties(mumlib2 PROPERTIES CXX_STANDARD_REQUIRED ON)
+set_target_properties(${target} PROPERTIES CXX_STANDARD 20)
+set_target_properties(${target} PROPERTIES CXX_STANDARD_REQUIRED ON)
 
-generate_export_header(mumlib2 EXPORT_FILE_NAME "mumlib2/export.h")
+generate_export_header(${target} EXPORT_FILE_NAME "mumlib2/export.h")
 
 
 configure_package_config_file(
@@ -162,8 +174,8 @@ write_basic_package_version_file(
 
 
 install(
-    TARGETS mumlib2
-    EXPORT mumlib2
+    TARGETS ${target}
+    EXPORT ${target}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
