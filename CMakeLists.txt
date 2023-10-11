@@ -18,12 +18,7 @@ project(${target} LANGUAGES CXX VERSION ${LIB_VERSION_STRING})
 # CMake/Global Settings
 #
 
-
-
-
 set (CMAKE_CXX_STANDARD 20)
-
-
 
 
 include(CMakePackageConfigHelpers)
@@ -41,16 +36,14 @@ set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake" )
 find_package(Protobuf REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-find_package(Opus CONFIG)
-# Not finding...
-find_package( asio )
-
+find_package( asio REQUIRED)
+find_package( opus CONFIG )
 
 #
 # Variabls
 #
 
-set(MUMLIB2_STANDALONE ON)
+set(MUMLIB2_STANDALONE OFF)
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     set(MUMLIB2_STANDALONE ON)
@@ -156,8 +149,8 @@ target_include_directories(${target}
 target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} protobuf::libprotobuf)
 target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} OpenSSL::SSL)
 
-#target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} asio::asio)
-#target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} Opus::opus)
+target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} asio)
+target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} ${opus})
 
 
 #if(WIN32)

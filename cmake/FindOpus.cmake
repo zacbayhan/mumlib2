@@ -1,11 +1,12 @@
 
+
 if(OPUS_INCLUDE_DIR AND OPUS_LIBRARY AND OPUSFILE_LIBRARY)
     # Already in cache, be silent
     set(OPUS_FIND_QUIETLY TRUE)
 endif(OPUS_INCLUDE_DIR AND OPUS_LIBRARY AND OPUSFILE_LIBRARY)
 
 find_path(OPUS_INCLUDE_DIR
-    NAMES opusfile.h
+    NAMES opus.h
     PATH_SUFFIXES opus
 )
 
@@ -21,6 +22,7 @@ find_library(OPUSFILE_LIBRARY
 # Handle the QUIETLY and REQUIRED arguments and set OPUS_FOUND
 # to TRUE if all listed variables are TRUE.
 include(FindPackageHandleStandardArgs)
+
 find_package_handle_standard_args(OPUS DEFAULT_MSG
     OPUSFILE_LIBRARY OPUS_LIBRARY OPUS_INCLUDE_DIR
 )
