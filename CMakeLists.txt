@@ -2,6 +2,10 @@
 # CMake/Global Settings
 #
 
+set(target "mumlib2")
+
+project(${target} VERSION 1.0.0 LANGUAGES CXX)
+
 set(MUMLIB2_VERSION "1.0.0")
 
 cmake_minimum_required(VERSION 3.13)
