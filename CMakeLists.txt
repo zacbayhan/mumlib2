@@ -1,16 +1,7 @@
 #
-# CMake/Global Settings
-#
-
-set(target "mumlib2")
-
-project(${target} LANGUAGES CXX)
-
-cmake_minimum_required(VERSION 3.13)
-
-#
 # Set Version numbers
 #
+cmake_minimum_required(VERSION 3.22.1)
 
 set(LIB_MAJOR_VERSION "1")
 set(LIB_MINOR_VERSION "0")
@@ -18,7 +9,21 @@ set(LIB_PATCH_VERSION "0")
 
 set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
 
+set(target "mumlib2")
+
 project(${target} LANGUAGES CXX VERSION ${LIB_VERSION_STRING})
+
+
+#
+# CMake/Global Settings
+#
+
+
+
+
+set (CMAKE_CXX_STANDARD 20)
+
+
 
 
 include(CMakePackageConfigHelpers)
@@ -30,10 +35,15 @@ include(GNUInstallDirs)
 # Dependencies
 #
 
-find_package(asio)
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake" )
+#set( CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/distribution" CACHE PATH "Install path prefix" FORCE )
+
 find_package(Protobuf REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Opus)
+
+find_package(Opus CONFIG)
+# Not finding...
+find_package( asio )
 
 
 #
@@ -74,8 +84,6 @@ endif()
 #
 
 protobuf_generate_cpp(MUMLIB2_SOURCES_PROTO MUMLIB2_HEADERS_PROTO "src_proto/mumble.proto")
-
-
 
 #
 # Library
@@ -125,17 +133,17 @@ target_sources(${target} PRIVATE
 )
 
 
-if(MSVC)
-    target_compile_options(${target} PUBLIC /wd4244 /wd4251 /wd6001 /wd6031 /wd6255 /wd6258 /wd6385 /wd6386 /wd6387 /wd26439 /wd26451 /wd26495 /wd26812 /wd26819)
-endif()
+#if(MSVC)
+#    target_compile_options(${target} PUBLIC /wd4244 /wd4251 /wd6001 /wd6031 /wd6255 /wd6258 /wd6385 /wd6386 /wd6387 /wd26439 /wd26451 /wd26495 /wd26812 /wd26819)
+#endif()
 
 
 target_compile_definitions(${target} PUBLIC _USE_MATH_DEFINES)
 
-if(WIN32)
-    target_compile_definitions(${target} PUBLIC _WIN32_WINNT=0x0601)
-    target_compile_definitions(${target} PUBLIC _CRT_SECURE_NO_WARNINGS)
-endif()
+#if(WIN32)
+#    target_compile_definitions(${target} PUBLIC _WIN32_WINNT=0x0601)
+#    target_compile_definitions(${target} PUBLIC _CRT_SECURE_NO_WARNINGS)
+#endif()
 
 
 target_include_directories(${target}
@@ -145,14 +153,16 @@ target_include_directories(${target}
 		"$<INSTALL_INTERFACE:include>"
 )
 
-target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} asio::asio)
-target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} OpenSSL::SSL)
-target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} Opus::opus)
 target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} protobuf::libprotobuf)
+target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} OpenSSL::SSL)
 
-if(WIN32)
-    target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} Crypt32)
-endif()
+#target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} asio::asio)
+#target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} Opus::opus)
+
+
+#if(WIN32)
+#    target_link_libraries(${target} ${MUMLIB2_DEPS_VISIBLITY} Crypt32)
+#endif()
 
 
 set_target_properties(${target} PROPERTIES CXX_STANDARD 20)
@@ -206,12 +216,12 @@ install(
         "${CMAKE_INSTALL_CMAKEDIR}"
 )
 
-if(MSVC AND MUMLIB2_LIBRARY_TYPE STREQUAL "SHARED")
-    install(
-        FILES "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:$<TARGET_PDB_FILE:mumlib2>>"
-        DESTINATION "bin"
-    )
-endif()
+#if(MSVC AND MUMLIB2_LIBRARY_TYPE STREQUAL "SHARED")
+#    install(
+#        FILES "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:$<TARGET_PDB_FILE:mumlib2>>"
+#        DESTINATION "bin"
+#    )
+#endif()
 
 
 
@@ -219,28 +229,28 @@ endif()
 # Example
 #
 
-if(MUMLIB2_BUILD_EXAMPLE)
-    add_executable(mumlib2_example)
-
-    target_sources(mumlib2_example PRIVATE "src_example/mumlib2_example.cpp")
-
-    target_link_libraries(mumlib2_example PRIVATE mumlib2)
-
-    set_target_properties(mumlib2_example PROPERTIES CXX_STANDARD 20)
-    set_target_properties(mumlib2_example PROPERTIES CXX_STANDARD_REQUIRED ON)
-    
-
-    install(
-        TARGETS mumlib2_example
-        RUNTIME DESTINATION "bin"
-        ARCHIVE DESTINATION "lib"
-        LIBRARY DESTINATION "lib"
-    )
-
-    if(MSVC)
-        install(
-            FILES "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:$<TARGET_PDB_FILE:mumlib2_example>>"
-            DESTINATION "bin"
-        )
-    endif()
-endif()
+#if(MUMLIB2_BUILD_EXAMPLE)
+#    add_executable(mumlib2_example)
+#
+#    target_sources(mumlib2_example PRIVATE "src_example/mumlib2_example.cpp")
+#
+#    target_link_libraries(mumlib2_example PRIVATE mumlib2)
+#
+#    set_target_properties(mumlib2_example PROPERTIES CXX_STANDARD 20)
+#    set_target_properties(mumlib2_example PROPERTIES CXX_STANDARD_REQUIRED ON)
+#
+#
+#    install(
+#        TARGETS mumlib2_example
+#        RUNTIME DESTINATION "bin"
+#        ARCHIVE DESTINATION "lib"
+#        LIBRARY DESTINATION "lib"
+#    )
+#
+#    if(MSVC)
+#        install(
+#            FILES "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:$<TARGET_PDB_FILE:mumlib2_example>>"
+#            DESTINATION "bin"
+#        )
+#    endif()
+#endif()
